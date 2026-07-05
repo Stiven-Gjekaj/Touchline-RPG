@@ -13,12 +13,10 @@ from pathlib import Path
 
 from platformdirs import user_data_dir
 
+from touchline.engine.constants import SCHEMA_VERSION  # noqa: F401  (re-exported)
+
 APP_NAME = "TouchlineRPG"
 APP_AUTHOR = "Touchline"
-
-#: Bumped whenever the persisted schema changes in an incompatible way. Saves
-#: whose stored value differs are treated as incompatible rather than migrated.
-SCHEMA_VERSION = 1
 
 _SAVE_DIR_ENV = "TOUCHLINE_SAVE_DIR"
 

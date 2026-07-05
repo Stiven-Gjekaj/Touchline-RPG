@@ -1,0 +1,21 @@
+{
+  "prefixes": [
+    "Ash", "Bay", "Black", "Bridge", "Brook", "Clay", "Cliff", "Cold",
+    "Cross", "Dale", "East", "Elm", "Fair", "Fen", "Ford", "Gold", "Green",
+    "Grey", "Hart", "Hazel", "High", "Hill", "Holt", "Iron", "Kings", "Lake",
+    "Long", "Marsh", "Mill", "North", "Oak", "Old", "Port", "Red", "Rive",
+    "Rose", "Sand", "Sea", "Silver", "South", "Stone", "Storm", "Sun",
+    "Thorn", "Vale", "West", "Whit", "Wild", "Wind", "Wood"
+  ],
+  "suffixes": [
+    "bourne", "bridge", "brook", "burgh", "bury", "by", "combe", "dale",
+    "den", "field", "ford", "gate", "ham", "haven", "hurst", "ley", "mere",
+    "mouth", "port", "shaw", "stead", "ston", "thorpe", "ton", "vale",
+    "wick", "wood", "worth"
+  ],
+  "club_suffixes": [
+    "United", "City", "Athletic", "Rovers", "Wanderers", "Town", "County",
+    "Albion", "FC", "Rangers", "Forest", "Hotspur", "Dynamo", "Villa",
+    "Argyle", "Orient", "Palace", "Vale", "Harriers", "Borough"
+  ]
+}
