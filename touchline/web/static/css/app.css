@@ -1,0 +1,118 @@
+/* Touchline RPG — small overrides on top of Pico.css */
+
+:root {
+  --pico-primary: #2e9e5b;
+  --pico-primary-hover: #38b869;
+  --pico-primary-focus: rgba(46, 158, 91, 0.25);
+  --tl-pitch: #1f7a44;
+}
+
+.tl-nav {
+  border-bottom: 1px solid var(--pico-muted-border-color);
+  margin-bottom: 1.5rem;
+}
+.tl-brand { text-decoration: none; }
+.tl-footer {
+  margin-top: 3rem;
+  opacity: 0.6;
+  text-align: center;
+}
+
+/* Flash messages */
+.tl-flash {
+  padding: 0.75rem 1rem;
+  border-radius: var(--pico-border-radius);
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--pico-primary);
+  background: var(--pico-card-background-color);
+}
+.tl-flash-error { border-left-color: #d0402e; }
+.tl-flash-success { border-left-color: var(--tl-pitch); }
+.tl-flash-info { border-left-color: #3b7dd8; }
+
+/* Status header */
+.tl-status {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.tl-status .tl-stat {
+  background: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: 0.75rem 1rem;
+}
+.tl-stat .tl-stat-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.65;
+}
+.tl-stat .tl-stat-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Overall / potential badges */
+.tl-ovr {
+  display: inline-block;
+  min-width: 2.2rem;
+  text-align: center;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.35rem;
+  background: var(--tl-pitch);
+  color: #fff;
+}
+.tl-pos {
+  display: inline-block;
+  min-width: 2.3rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.12rem 0.3rem;
+  border-radius: 0.3rem;
+  border: 1px solid var(--pico-muted-border-color);
+}
+
+/* Match recap */
+.tl-recap {
+  font-family: var(--pico-font-family-monospace, monospace);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  background: var(--pico-code-background-color);
+  padding: 1rem 1.2rem;
+  border-radius: var(--pico-border-radius);
+  overflow-x: auto;
+}
+.tl-recap .tl-scoreline {
+  font-size: 1.05rem;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.tl-you { background: rgba(46, 158, 91, 0.12); }
+
+/* Compact tables that scroll on small screens */
+.tl-table-wrap { overflow-x: auto; }
+table.tl-compact td, table.tl-compact th {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+/* Attribute bars */
+.tl-attr { display: grid; grid-template-columns: 6rem 1fr 2rem; gap: 0.5rem; align-items: center; margin-bottom: 0.35rem; }
+.tl-attr-label { font-size: 0.8rem; text-transform: capitalize; opacity: 0.8; }
+.tl-bar { height: 0.6rem; border-radius: 0.3rem; background: var(--pico-muted-border-color); overflow: hidden; }
+.tl-bar > span { display: block; height: 100%; background: var(--tl-pitch); }
+.tl-attr-val { font-weight: 600; text-align: right; font-size: 0.85rem; }
+
+/* Big advance button */
+.tl-advance { text-align: center; }
+.tl-advance button { min-width: 240px; }
+
+.tl-messages li { margin-bottom: 0.3rem; }

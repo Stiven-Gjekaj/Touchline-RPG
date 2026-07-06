@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Fixtures — Touchline RPG{% endblock %}
+{% block content %}
+<hgroup>
+  <h2>Fixtures</h2>
+  <p>{{ club.name }} · {{ state.season.year_label }}</p>
+</hgroup>
+
+<div class="tl-table-wrap">
+  <table class="tl-compact striped">
+    <thead>
+      <tr><th>Wk</th><th>Opponent</th><th>H/A</th><th>Result</th></tr>
+    </thead>
+    <tbody>
+      {% for m in matches %}
+        {% set is_home = m.home_club_id == club.id %}
+        {% set opp_id = m.away_club_id if is_home else m.home_club_id %}
+        <tr>
+          <td>{{ m.week_number }}</td>
+          <td>{{ state.clubs[opp_id].name }} ({{ state.clubs[opp_id].short_name }})</td>
+          <td>{{ 'H' if is_home else 'A' }}</td>
+          <td>
+            {% if m.is_played %}
+              {% set us = m.home_goals if is_home else m.away_goals %}
+              {% set them = m.away_goals if is_home else m.home_goals %}
+              <strong>{{ us }}–{{ them }}</strong>
+              {{ 'W' if us > them else ('L' if us < them else 'D') }}
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

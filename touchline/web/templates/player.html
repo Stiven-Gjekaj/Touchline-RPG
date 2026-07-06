@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ user.name }} — Touchline RPG{% endblock %}
+{% block content %}
+<hgroup>
+  <h2>{{ user.name }} {% if user.is_retired %}<small>(retired)</small>{% endif %}</h2>
+  <p>{{ user.position.value }} · Age {{ user.age }} · {{ club.name if club else 'Free agent' }}</p>
+</hgroup>
+
+<div class="grid">
+  <article>
+    <header>
+      <strong>Rating</strong>
+      <span class="tl-ovr">{{ user.overall() }}</span>
+      &nbsp;·&nbsp; Potential {{ user.potential }}
+    </header>
+    {% for attr in attribute_names %}
+      {% set val = user[attr] %}
+      <div class="tl-attr">
+        <span class="tl-attr-label">{{ attr }}</span>
+        <span class="tl-bar"><span style="width: {{ val }}%"></span></span>
+        <span class="tl-attr-val">{{ val }}</span>
+      </div>
+    {% endfor %}
+  </article>
+
+  <div>
+    <article>
+      <header><strong>Condition &amp; form</strong></header>
+      <p>Condition: {{ user.condition }}/100</p>
+      <p>Form: {{ user.form }} · Morale: {{ user.morale }}</p>
+      <p>{% if user.is_injured %}🚑 Injured — {{ user.injury_weeks_remaining }} week(s) out{% else %}Fully fit{% endif %}</p>
+    </article>
+
+    <article>
+      <header><strong>Contract</strong></header>
+      {% if contract %}
+        <p>{{ contract.wage_per_week }} /week</p>
+        <p>Expires end of week {{ contract.expires_on_week }}</p>
+      {% else %}
+        <p>No current contract.</p>
+      {% endif %}
+    </article>
+
+    <article>
+      <header><strong>This season</strong></header>
+      <p>{{ summary.appearances }} apps · {{ summary.goals }} goals · {{ summary.assists }} assists</p>
+      <p>Average rating: {{ summary.avg_rating }}</p>
+    </article>
+  </div>
+</div>
+
+{% if can_retire %}
+  <form method="post" action="{{ url_for('player.retire') }}"
+        onsubmit="return confirm('Retire from football? This ends your playing career.');">
+    <button type="submit" class="secondary outline">Retire from football</button>
+  </form>
+{% endif %}
+{% endblock %}

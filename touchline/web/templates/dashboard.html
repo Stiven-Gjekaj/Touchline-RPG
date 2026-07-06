@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Touchline RPG{% endblock %}
+{% block content %}
+
+<div class="tl-status">
+  <div class="tl-stat">
+    <div class="tl-stat-label">Club</div>
+    <div class="tl-stat-value">{{ club.name }}</div>
+  </div>
+  <div class="tl-stat">
+    <div class="tl-stat-label">Division</div>
+    <div class="tl-stat-value">{{ state.leagues[club.league_id].name }}</div>
+  </div>
+  <div class="tl-stat">
+    <div class="tl-stat-label">{{ state.season.year_label }} · {{ phase_label }}</div>
+    <div class="tl-stat-value">Week {{ state.season.current_week }}</div>
+  </div>
+  <div class="tl-stat">
+    <div class="tl-stat-label">{{ user.position.value }} · Age {{ user.age }}</div>
+    <div class="tl-stat-value">{{ user.name }} <span class="tl-ovr">{{ user.overall() }}</span></div>
+  </div>
+</div>
+
+{% if last_week %}
+  {% set result = last_week.user_match_result %}
+  {% if result and result.recap_lines %}
+    <article>
+      <header><strong>Last match</strong></header>
+      {% include "partials/recap.html" %}
+    </article>
+  {% endif %}
+  {% if last_week.messages %}
+    <article>
+      <header><strong>News</strong></header>
+      <ul class="tl-messages">
+        {% for m in last_week.messages %}<li>{{ m }}</li>{% endfor %}
+      </ul>
+    </article>
+  {% endif %}
+{% endif %}
+
+<article>
+  <header><strong>Next up</strong></header>
+  {% if fixture %}
+    {% set is_home = fixture.home_club_id == club.id %}
+    {% set opp_id = fixture.away_club_id if is_home else fixture.home_club_id %}
+    <p>
+      Week {{ fixture.week_number }}:
+      {{ 'home to' if is_home else 'away to' }}
+      <strong>{{ state.clubs[opp_id].name }}</strong>
+      ({{ state.clubs[opp_id].short_name }})
+    </p>
+  {% else %}
+    <p>No more league fixtures this season.</p>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('dashboard.advance') }}" class="tl-advance">
+    {% if is_training %}
+      <label>Training focus this week
+        <select name="focus">
+          {% for f in focuses %}
+            <option value="{{ f.value }}" {% if f.value == 'BALANCED' %}selected{% endif %}>{{ f.value.title() }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    {% endif %}
+    <button type="submit">
+      {% if phase.value == 'MATCH' %}▶ Play week {{ state.season.current_week }}
+      {% elif phase.value == 'SEASON_END' %}▶ Finish the season
+      {% else %}▶ Advance week{% endif %}
+    </button>
+    {% if window_open %}<p><small>🔁 The transfer window is open.</small></p>{% endif %}
+  </form>
+</article>
+{% endblock %}

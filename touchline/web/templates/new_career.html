@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}New Career — Touchline RPG{% endblock %}
+{% block content %}
+<hgroup>
+  <h1>Start your career</h1>
+  <p>Create a young footballer and take them from obscurity to glory, one season at a time.</p>
+</hgroup>
+
+{% set pos_labels = {'GK': 'Goalkeeper', 'DF': 'Defender', 'MF': 'Midfielder', 'FW': 'Forward'} %}
+<form method="post" action="{{ url_for('saves.create_career') }}">
+  <label>Save name
+    <input name="save_name" placeholder="My Career" value="My Career" maxlength="60">
+  </label>
+  <div class="grid">
+    <label>First name
+      <input name="first_name" required autocomplete="off" placeholder="e.g. Leo">
+    </label>
+    <label>Last name
+      <input name="last_name" required autocomplete="off" placeholder="e.g. Silva">
+    </label>
+  </div>
+  <label>Position
+    <select name="position">
+      {% for p in positions %}
+        <option value="{{ p.value }}" {% if p.value == 'FW' %}selected{% endif %}>{{ pos_labels[p.value] }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <button type="submit">Begin career ⚽</button>
+</form>
+<p><small>You'll start as a raw teenager at a lower-league club. Train hard, earn minutes, and work your way up the pyramid.</small></p>
+{% endblock %}

@@ -1,0 +1,58 @@
+"""The home dashboard and the central 'advance week' action."""
+
+from __future__ import annotations
+
+from flask import Blueprint, redirect, render_template, request, url_for
+
+from touchline.engine.career import advance_week
+from touchline.engine.models import TrainingFocus
+from touchline.engine.season_calendar import is_training_week, is_window_open, phase
+from touchline.web.helpers import (
+    active_save,
+    next_user_fixture,
+    phase_label,
+    require_career,
+)
+
+bp = Blueprint("dashboard", __name__)
+
+
+@bp.route("/")
+def index():
+    if not active_save().has_career:
+        return redirect(url_for("saves.new_career_form"))
+    return redirect(url_for("dashboard.home"))
+
+
+@bp.route("/dashboard")
+@require_career
+def home():
+    save = active_save()
+    state = save.state
+    current_phase = phase(state.current_week)
+    return render_template(
+        "dashboard.html",
+        state=state,
+        user=state.user_player,
+        club=state.user_club,
+        phase=current_phase,
+        phase_label=phase_label(current_phase),
+        is_training=is_training_week(state.current_week),
+        window_open=is_window_open(state.current_week),
+        fixture=next_user_fixture(state),
+        last_week=save.last_week,
+        focuses=list(TrainingFocus),
+    )
+
+
+@bp.route("/advance", methods=["POST"])
+@require_career
+def advance():
+    save = active_save()
+    focus_name = request.form.get("focus", TrainingFocus.BALANCED.value)
+    try:
+        focus = TrainingFocus(focus_name)
+    except ValueError:
+        focus = TrainingFocus.BALANCED
+    save.last_week = advance_week(save.state, save.rng, focus)
+    return redirect(url_for("dashboard.home"))

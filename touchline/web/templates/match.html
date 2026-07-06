@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Last Match — Touchline RPG{% endblock %}
+{% block content %}
+<hgroup>
+  <h2>Last match</h2>
+</hgroup>
+{% if result and result.recap_lines %}
+  {% include "partials/recap.html" %}
+{% else %}
+  <p>No match has been played yet. Advance to a match week from the
+     <a href="{{ url_for('dashboard.home') }}">dashboard</a>.</p>
+{% endif %}
+{% endblock %}
