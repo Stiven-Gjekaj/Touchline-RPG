@@ -7,9 +7,11 @@ guaranteed consistency — no change-tracking or delete-reconciliation to get wr
 
 from __future__ import annotations
 
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from touchline.engine.constants import SCHEMA_VERSION
+from touchline.engine.models import Mentality, Tactic
 from touchline.engine.state import GameState
 from touchline.persistence import mappers as m
 from touchline.persistence import orm_models as orm
@@ -17,6 +19,19 @@ from touchline.persistence import orm_models as orm
 
 class IncompatibleSaveError(Exception):
     """Raised when a save file's schema version doesn't match the game."""
+
+
+def schema_version(session: Session) -> int | None:
+    """Read the save's schema version via a column present in every version.
+
+    Done with raw SQL so it works even when newer columns are absent from an
+    older file (a full ORM read would fail on the missing columns).
+    """
+    try:
+        row = session.execute(text("SELECT schema_version FROM meta WHERE id = 1")).first()
+        return int(row[0]) if row else None
+    except Exception:
+        return None
 
 
 _ROW_TYPES = [
@@ -36,6 +51,7 @@ def save_state(session: Session, state: GameState) -> None:
         last_played_at=state.last_played_at, schema_version=state.schema_version,
         user_player_id=state.user_player_id, user_club_id=state.user_club_id,
         next_id=state._next_id, season_id=state.season.id,
+        formation=state.tactic.formation, mentality=state.tactic.mentality.value,
     ))
     session.add(m.country_to_row(state.country))
     session.add(m.season_to_row(state.season))
@@ -54,22 +70,25 @@ def save_state(session: Session, state: GameState) -> None:
 
 def load_state(session: Session, expected_version: int = SCHEMA_VERSION) -> GameState:
     """Reconstruct a :class:`GameState` from a save, or raise if incompatible."""
-    meta = session.get(orm.MetaRow, 1)
-    if meta is None:
+    version = schema_version(session)
+    if version is None:
         raise IncompatibleSaveError("save file has no metadata row")
-    if meta.schema_version != expected_version:
+    if version != expected_version:
         raise IncompatibleSaveError(
-            f"save schema v{meta.schema_version} is incompatible with "
+            f"save schema v{version} is incompatible with "
             f"game schema v{expected_version}"
         )
 
+    meta = session.get(orm.MetaRow, 1)
     country = m.country_from_row(session.query(orm.CountryRow).one())
     season = m.season_from_row(session.get(orm.SeasonRow, meta.season_id))
+    mentality = Mentality(meta.mentality) if meta.mentality else Mentality.BALANCED
+    tactic = Tactic(formation=meta.formation or "4-4-2", mentality=mentality)
     state = GameState(
         save_name=meta.save_name, created_at=meta.created_at,
         last_played_at=meta.last_played_at, schema_version=meta.schema_version,
         country=country, season=season, user_player_id=meta.user_player_id,
-        user_club_id=meta.user_club_id, _next_id=meta.next_id,
+        user_club_id=meta.user_club_id, _next_id=meta.next_id, tactic=tactic,
     )
     for row in session.query(orm.LeagueRow).all():
         league = m.league_from_row(row)

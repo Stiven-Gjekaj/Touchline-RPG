@@ -25,6 +25,8 @@ class MetaRow(Base):
     user_club_id = Column(Integer)
     next_id = Column(Integer, nullable=False)
     season_id = Column(Integer, nullable=False)
+    formation = Column(String)
+    mentality = Column(String)
 
 
 class CountryRow(Base):
@@ -85,6 +87,7 @@ class PlayerRow(Base):
     is_user = Column(Boolean, nullable=False)
     is_retired = Column(Boolean, nullable=False)
     contract_id = Column(Integer)
+    sub_position = Column(String)
 
 
 class MatchRow(Base):

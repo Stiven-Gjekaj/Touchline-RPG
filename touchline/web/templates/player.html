@@ -3,7 +3,7 @@
 {% block content %}
 <hgroup>
   <h2>{{ user.name }} {% if user.is_retired %}<small>(retired)</small>{% endif %}</h2>
-  <p>{{ user.position.value }} · Age {{ user.age }} · {{ club.name if club else 'Free agent' }}</p>
+  <p>{{ user.role }} ({{ user.position.value }}) · Age {{ user.age }} · {{ club.name if club else 'Free agent' }}</p>
 </hgroup>
 
 <div class="grid">

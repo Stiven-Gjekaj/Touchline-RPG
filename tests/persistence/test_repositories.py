@@ -34,8 +34,13 @@ def _save_then_load(state, tmp_path):
 
 
 def test_round_trip_preserves_scalars(tmp_path):
+    from touchline.engine.career import set_tactic
+
     state = _seeded_state(1)
+    set_tactic(state, "4-3-3", "ATTACKING")  # exercise non-default tactic
     loaded = _save_then_load(state, tmp_path)
+    # Sub-positions survive too (dataclass equality covers the field).
+    assert loaded.user_player.sub_position == state.user_player.sub_position
 
     assert loaded.save_name == state.save_name
     assert loaded.user_player_id == state.user_player_id
@@ -44,6 +49,7 @@ def test_round_trip_preserves_scalars(tmp_path):
     assert loaded.season.number == state.season.number
     assert loaded.season.current_week == state.season.current_week
     assert loaded.country == state.country
+    assert loaded.tactic == state.tactic
 
 
 def test_round_trip_preserves_every_entity(tmp_path):

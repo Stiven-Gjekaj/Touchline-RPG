@@ -153,6 +153,7 @@ def generate_player(
     *,
     age: int | None = None,
     is_user: bool = False,
+    sub_position=None,
 ) -> Player:
     """Create, register, and return a player (with a contract if it has a club)."""
     if age is None:
@@ -172,6 +173,7 @@ def generate_player(
         is_user=is_user,
         condition=100,
         morale=70,
+        sub_position=sub_position or rng.choice(C.SUB_POSITIONS_BY_BROAD[position]),
         **attrs,
     )
     player.potential = generate_potential(age, player.overall(), rng)
@@ -284,6 +286,7 @@ def create_user_player(
         club_id=club.id,
         potential=0,
         is_user=True,
+        sub_position=rng.choice(C.SUB_POSITIONS_BY_BROAD[position]),
         **attrs,
     )
     # The user gets extra-generous headroom for a rags-to-riches arc.

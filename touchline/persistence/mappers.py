@@ -23,6 +23,7 @@ from touchline.engine.models import (
     Position,
     Season,
     SeasonRecord,
+    SubPosition,
     TransferOffer,
 )
 from touchline.persistence import orm_models as orm
@@ -84,6 +85,7 @@ def player_to_row(player: Player) -> orm.PlayerRow:
         injury_weeks_remaining=player.injury_weeks_remaining,
         is_user=player.is_user, is_retired=player.is_retired,
         contract_id=player.contract_id,
+        sub_position=player.sub_position.value if player.sub_position else None,
     )
 
 
@@ -97,6 +99,7 @@ def player_from_row(row: orm.PlayerRow) -> Player:
         morale=row.morale, condition=row.condition,
         injury_weeks_remaining=row.injury_weeks_remaining, is_user=row.is_user,
         is_retired=row.is_retired, contract_id=row.contract_id,
+        sub_position=SubPosition(row.sub_position) if row.sub_position else None,
     )
 
 

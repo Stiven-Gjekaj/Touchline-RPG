@@ -6,11 +6,12 @@ calibrated. Keeping them in one module makes the whole game trivially retunable.
 
 from __future__ import annotations
 
-from touchline.engine.models import Position, TrainingFocus
+from touchline.engine.models import Mentality, Position, SubPosition, TrainingFocus
 
 #: Bumped whenever the persisted schema changes incompatibly. Saves whose stored
 #: value differs are treated as incompatible rather than migrated.
-SCHEMA_VERSION = 1
+#: v2 added sub-positions and tactics columns.
+SCHEMA_VERSION = 2
 
 # --------------------------------------------------------------------------- #
 # Ratings
@@ -36,6 +37,50 @@ PRIMARY_ATTRIBUTE: dict[Position, str] = {
     Position.DF: "defending",
     Position.MF: "passing",
     Position.FW: "shooting",
+}
+
+# --------------------------------------------------------------------------- #
+# Sub-positions and tactics
+# --------------------------------------------------------------------------- #
+
+#: Which broad position a detailed sub-position belongs to.
+SUB_POSITION_TO_BROAD: dict[SubPosition, Position] = {
+    SubPosition.GK: Position.GK,
+    SubPosition.CB: Position.DF,
+    SubPosition.FB: Position.DF,
+    SubPosition.DM: Position.MF,
+    SubPosition.CM: Position.MF,
+    SubPosition.AM: Position.MF,
+    SubPosition.W: Position.FW,
+    SubPosition.ST: Position.FW,
+}
+
+#: Sub-positions to draw from when generating players in each broad slot
+#: (repetition weights the mix).
+SUB_POSITIONS_BY_BROAD: dict[Position, list[SubPosition]] = {
+    Position.GK: [SubPosition.GK],
+    Position.DF: [SubPosition.CB, SubPosition.CB, SubPosition.FB, SubPosition.FB],
+    Position.MF: [SubPosition.DM, SubPosition.CM, SubPosition.CM, SubPosition.AM],
+    Position.FW: [SubPosition.W, SubPosition.ST, SubPosition.ST],
+}
+
+#: Selectable formations: starters per broad position (each sums to 11). The
+#: default matches v1's fixed shape so existing balance is unchanged.
+DEFAULT_FORMATION = "4-4-2"
+FORMATIONS: dict[str, dict[Position, int]] = {
+    "4-4-2": {Position.GK: 1, Position.DF: 4, Position.MF: 4, Position.FW: 2},
+    "4-3-3": {Position.GK: 1, Position.DF: 4, Position.MF: 3, Position.FW: 3},
+    "4-5-1": {Position.GK: 1, Position.DF: 4, Position.MF: 5, Position.FW: 1},
+    "5-3-2": {Position.GK: 1, Position.DF: 5, Position.MF: 3, Position.FW: 2},
+    "3-5-2": {Position.GK: 1, Position.DF: 3, Position.MF: 5, Position.FW: 2},
+}
+
+#: Mentality multipliers on expected goals: (own xG, opponent xG). Attacking
+#: scores more but concedes more; defensive is the reverse.
+MENTALITY_XG: dict[Mentality, tuple[float, float]] = {
+    Mentality.DEFENSIVE: (0.85, 0.80),
+    Mentality.BALANCED: (1.0, 1.0),
+    Mentality.ATTACKING: (1.2, 1.25),
 }
 
 # --------------------------------------------------------------------------- #

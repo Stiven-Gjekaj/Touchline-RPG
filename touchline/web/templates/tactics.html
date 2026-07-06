@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Tactics — Touchline RPG{% endblock %}
+{% block content %}
+<hgroup>
+  <h2>Tactics</h2>
+  <p>Your setup applies to your club's matches. Rivals play a standard shape.</p>
+</hgroup>
+
+{% set mentality_help = {
+  'DEFENSIVE': 'Solid and cautious — you score fewer, but concede fewer.',
+  'BALANCED': 'An even approach.',
+  'ATTACKING': 'Go for the throat — more goals, but you concede more too.'
+} %}
+
+<form method="post" action="{{ url_for('club.update_tactics') }}">
+  <label>Formation
+    <select name="formation">
+      {% for f in formations %}
+        <option value="{{ f }}" {% if f == tactic.formation %}selected{% endif %}>{{ f }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <fieldset>
+    <legend>Mentality</legend>
+    {% for m in mentalities %}
+      <label>
+        <input type="radio" name="mentality" value="{{ m.value }}"
+               {% if m == tactic.mentality %}checked{% endif %}>
+        {{ m.value.title() }} — <small>{{ mentality_help[m.value] }}</small>
+      </label>
+    {% endfor %}
+  </fieldset>
+
+  <button type="submit">Save tactics</button>
+</form>
+{% endblock %}

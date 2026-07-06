@@ -21,6 +21,7 @@ from touchline.engine.models import (
     Player,
     Season,
     SeasonRecord,
+    Tactic,
     TransferOffer,
 )
 
@@ -50,6 +51,9 @@ class GameState:
     # Career history for the user's player (survives the yearly data clear).
     season_records: list[SeasonRecord] = field(default_factory=list)
     honours: list[Honour] = field(default_factory=list)
+
+    # The user's chosen tactic (NPCs use the default formation/mentality).
+    tactic: Tactic = field(default_factory=Tactic)
 
     _next_id: int = 1
 

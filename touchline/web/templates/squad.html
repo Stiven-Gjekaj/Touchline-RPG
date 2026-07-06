@@ -14,7 +14,7 @@
     <tbody>
       {% for p in players %}
         <tr class="{{ 'tl-you' if p.id == user_id else '' }}">
-          <td><span class="tl-pos">{{ p.position.value }}</span></td>
+          <td><span class="tl-pos">{{ p.role }}</span></td>
           <td>{{ p.name }}{% if p.id == user_id %} ⭐{% endif %}</td>
           <td>{{ p.age }}</td>
           <td><span class="tl-ovr">{{ p.overall() }}</span></td>

@@ -131,6 +131,18 @@ def new_career(
     return state
 
 
+def set_tactic(state: GameState, formation: str, mentality: str) -> None:
+    """Update the user's tactic, ignoring unknown formations/mentalities."""
+    from touchline.engine.models import Mentality
+
+    if formation in C.FORMATIONS:
+        state.tactic.formation = formation
+    try:
+        state.tactic.mentality = Mentality(mentality)
+    except ValueError:
+        pass
+
+
 def advance_week(
     state: GameState,
     rng: random.Random,
