@@ -116,3 +116,7 @@ table.tl-compact td, table.tl-compact th {
 .tl-advance button { min-width: 240px; }
 
 .tl-messages li { margin-bottom: 0.3rem; }
+
+.tl-save-actions { display: flex; gap: 0.4rem; }
+.tl-save-actions form { margin: 0; }
+.tl-save-actions button { margin: 0; padding: 0.25rem 0.7rem; font-size: 0.8rem; }

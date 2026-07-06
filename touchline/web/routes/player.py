@@ -44,7 +44,8 @@ def profile():
 @bp.route("/player/retire", methods=["POST"])
 @require_career
 def retire():
-    state = active_save().state
-    for message in retire_user(state):
+    save = active_save()
+    for message in retire_user(save.state):
         flash(message, "info")
+    save.persist()
     return redirect(url_for("player.profile"))

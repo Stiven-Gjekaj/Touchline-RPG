@@ -20,7 +20,7 @@ bp = Blueprint("dashboard", __name__)
 @bp.route("/")
 def index():
     if not active_save().has_career:
-        return redirect(url_for("saves.new_career_form"))
+        return redirect(url_for("saves.list_saves"))
     return redirect(url_for("dashboard.home"))
 
 
@@ -55,4 +55,5 @@ def advance():
     except ValueError:
         focus = TrainingFocus.BALANCED
     save.last_week = advance_week(save.state, save.rng, focus)
+    save.persist()
     return redirect(url_for("dashboard.home"))

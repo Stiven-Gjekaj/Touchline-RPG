@@ -29,7 +29,7 @@ def require_career(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
         if not active_save().has_career:
-            return redirect(url_for("saves.new_career_form"))
+            return redirect(url_for("saves.list_saves"))
         return view(*args, **kwargs)
 
     return wrapped
