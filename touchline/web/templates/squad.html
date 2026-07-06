@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Squad — Touchline RPG{% endblock %}
+{% block content %}
+<hgroup>
+  <h2>Squad</h2>
+  <p>{{ club.name }} · {{ players|length }} players</p>
+</hgroup>
+
+<div class="tl-table-wrap">
+  <table class="tl-compact striped">
+    <thead>
+      <tr><th>Pos</th><th>Name</th><th>Age</th><th>OVR</th><th>Pot</th><th>Cond</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      {% for p in players %}
+        <tr class="{{ 'tl-you' if p.id == user_id else '' }}">
+          <td><span class="tl-pos">{{ p.position.value }}</span></td>
+          <td>{{ p.name }}{% if p.id == user_id %} ⭐{% endif %}</td>
+          <td>{{ p.age }}</td>
+          <td><span class="tl-ovr">{{ p.overall() }}</span></td>
+          <td>{{ p.potential }}</td>
+          <td>{{ p.condition }}</td>
+          <td>{% if p.is_injured %}🚑 {{ p.injury_weeks_remaining }} wk{% else %}Fit{% endif %}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

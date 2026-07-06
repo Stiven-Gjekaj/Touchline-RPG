@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Transfers — Touchline RPG{% endblock %}
+{% block content %}
+<hgroup>
+  <h2>Transfer inbox</h2>
+  <p>Offers for {{ state.user_player.name }}</p>
+</hgroup>
+
+{% if offers %}
+  {% for o in offers %}
+    <article>
+      <header>
+        <strong>{{ state.clubs[o.to_club_id].name }}</strong> want to sign you
+        {% if o.from_club_id != o.to_club_id %}
+          from {{ state.clubs[o.from_club_id].name }}
+        {% endif %}
+      </header>
+      <ul>
+        <li>Transfer fee: <strong>{{ o.offer_fee }}</strong></li>
+        <li>Wage offered: <strong>{{ o.wage_offered }}</strong> /week</li>
+        <li>Contract length: {{ o.length_offered_years }} year(s)</li>
+      </ul>
+      {% if o.history %}
+        <details>
+          <summary>Negotiation history</summary>
+          <ul>{% for h in o.history %}<li>{{ h }}</li>{% endfor %}</ul>
+        </details>
+      {% endif %}
+      <div class="grid">
+        <form method="post" action="{{ url_for('transfers.respond', offer_id=o.id, action='accept') }}">
+          <button type="submit">Accept &amp; sign</button>
+        </form>
+        <form method="post" action="{{ url_for('transfers.respond', offer_id=o.id, action='counter') }}">
+          <button type="submit" class="secondary">Counter wage</button>
+        </form>
+        <form method="post" action="{{ url_for('transfers.respond', offer_id=o.id, action='reject') }}">
+          <button type="submit" class="secondary outline">Reject</button>
+        </form>
+      </div>
+    </article>
+  {% endfor %}
+{% else %}
+  <p>No offers on the table. Play well during a transfer window to attract interest
+     from other clubs.</p>
+{% endif %}
+{% endblock %}

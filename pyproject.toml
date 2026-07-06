@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "touchline-rpg"
+version = "0.1.0"
+description = "A text-based football career-mode RPG (desktop, local web UI)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Stiven" }]
+dependencies = [
+    "flask>=3.0",
+    "sqlalchemy>=2.0",
+    "pywebview>=5.0",
+    "platformdirs>=4.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+touchline = "touchline.desktop.launcher:main"
+
+[tool.setuptools.packages.find]
+include = ["touchline*"]
+
+[tool.setuptools.package-data]
+touchline = ["data/*.json", "web/templates/**/*.html", "web/static/**/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-q"

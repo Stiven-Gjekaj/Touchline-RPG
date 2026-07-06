@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Standings — Touchline RPG{% endblock %}
+{% block content %}
+<hgroup>
+  <h2>Standings</h2>
+  <p>{{ league.name }} · {{ state.season.year_label }}</p>
+</hgroup>
+
+<div class="grid">
+  {% for t in tiers %}
+    <a href="{{ url_for('season.standings', tier=t) }}"
+       role="button"
+       class="{{ '' if t == current_tier else 'outline' }}">
+      {{ state.league_by_tier(t).name }}
+    </a>
+  {% endfor %}
+</div>
+
+<div class="tl-table-wrap">
+  <table class="tl-compact striped">
+    <thead>
+      <tr>
+        <th>#</th><th>Club</th><th>P</th><th>W</th><th>D</th><th>L</th>
+        <th>GF</th><th>GA</th><th>GD</th><th>Pts</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in table %}
+        <tr class="{{ 'tl-you' if row.club.id == state.user_club_id else '' }}">
+          <td>{{ loop.index }}</td>
+          <td>{{ row.club.name }}</td>
+          <td>{{ row.played }}</td>
+          <td>{{ row.won }}</td>
+          <td>{{ row.drawn }}</td>
+          <td>{{ row.lost }}</td>
+          <td>{{ row.goals_for }}</td>
+          <td>{{ row.goals_against }}</td>
+          <td>{{ row.goal_difference }}</td>
+          <td><strong>{{ row.points }}</strong></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

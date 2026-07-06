@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Touchline RPG{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pico.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <script src="{{ url_for('static', filename='js/htmx.min.js') }}" defer></script>
+</head>
+<body>
+  <nav class="container-fluid tl-nav">
+    <ul>
+      <li><strong><a href="{{ url_for('dashboard.index') }}" class="tl-brand">⚽ Touchline RPG</a></strong></li>
+    </ul>
+    {% if active_save().has_career %}
+    <ul>
+      <li><a href="{{ url_for('dashboard.home') }}">Dashboard</a></li>
+      <li><a href="{{ url_for('club.squad') }}">Squad</a></li>
+      <li><a href="{{ url_for('season.standings') }}">Standings</a></li>
+      <li><a href="{{ url_for('season.fixtures') }}">Fixtures</a></li>
+      <li><a href="{{ url_for('player.profile') }}">Player</a></li>
+      <li><a href="{{ url_for('transfers.inbox') }}">Transfers</a></li>
+      <li><a href="{{ url_for('saves.list_saves') }}">Saves</a></li>
+    </ul>
+    {% endif %}
+  </nav>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="tl-flash tl-flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="container tl-footer">
+    <small>Touchline RPG — a fictional football career. Everything here is procedurally generated.</small>
+  </footer>
+</body>
+</html>

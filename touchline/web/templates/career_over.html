@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Career Complete — Touchline RPG{% endblock %}
+{% block content %}
+<hgroup>
+  <h1>Career complete</h1>
+  <p>The final whistle on a footballing life.</p>
+</hgroup>
+
+<article>
+  <header><strong>{{ user.name }}</strong></header>
+  <p>{{ user.position.value }} · Hung up the boots at age {{ user.age }}</p>
+  <p>Last club: {{ club.name if club else '—' }}</p>
+  <p>Seasons played: {{ state.season.number }}</p>
+  <p>Final rating: <span class="tl-ovr">{{ user.overall() }}</span>
+     &nbsp;(potential was {{ user.potential }})</p>
+</article>
+
+<p>Thanks for playing. Start a
+   <a href="{{ url_for('saves.new_career_form') }}">new career</a>
+   or revisit your <a href="{{ url_for('saves.list_saves') }}">saves</a>.</p>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Saves — Touchline RPG{% endblock %}
+{% block content %}
+<hgroup>
+  <h1>⚽ Touchline RPG</h1>
+  <p>Load a career or start a new one.</p>
+</hgroup>
+
+<p><a href="{{ url_for('saves.new_career_form') }}" role="button">+ New career</a></p>
+
+{% if saves %}
+  <div class="tl-table-wrap">
+    <table class="tl-compact striped">
+      <thead>
+        <tr><th>Save</th><th>Player</th><th>Club</th><th>Progress</th><th>Last played</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for s in saves %}
+          <tr>
+            <td>{{ s.save_name }}</td>
+            <td>{{ s.player_name }}</td>
+            <td>{{ s.club_name }}</td>
+            <td>Season {{ s.season_number }} · wk {{ s.current_week }}</td>
+            <td><small>{{ s.last_played_at.replace('T', ' ') }}</small></td>
+            <td class="tl-save-actions">
+              {% if s.compatible %}
+                <form method="post" action="{{ url_for('saves.load', slug=s.slug) }}">
+                  <button type="submit" class="outline">Load</button>
+                </form>
+              {% else %}
+                <small>Incompatible</small>
+              {% endif %}
+              <form method="post" action="{{ url_for('saves.delete', slug=s.slug) }}"
+                    onsubmit="return confirm('Delete this save permanently?');">
+                <button type="submit" class="secondary outline">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p>No saved careers yet. Start a new one above.</p>
+{% endif %}
+{% endblock %}
