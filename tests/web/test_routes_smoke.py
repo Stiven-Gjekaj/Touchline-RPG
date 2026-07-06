@@ -67,6 +67,20 @@ def test_save_slot_load_and_delete_flow(client):
     assert b"Ada Stone" not in client.get("/saves").data
 
 
+def test_advance_supports_htmx_partial_and_plain_fallback(client):
+    _start_career(client)
+    # Plain POST (no JS) redirects — graceful fallback.
+    plain = client.post("/advance", data={"focus": "BALANCED"})
+    assert plain.status_code == 302
+
+    # htmx request returns the swappable dashboard fragment, not a redirect.
+    hx = client.post("/advance", data={"focus": "BALANCED"},
+                     headers={"HX-Request": "true"})
+    assert hx.status_code == 200
+    assert b'id="tl-dashboard"' in hx.data
+    assert b"<html" not in hx.data  # a fragment, not a full page
+
+
 def test_transfer_inbox_renders(client):
     _start_career(client)
     assert client.get("/transfers").status_code == 200

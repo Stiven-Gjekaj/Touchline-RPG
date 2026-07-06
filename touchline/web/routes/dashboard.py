@@ -17,21 +17,11 @@ from touchline.web.helpers import (
 bp = Blueprint("dashboard", __name__)
 
 
-@bp.route("/")
-def index():
-    if not active_save().has_career:
-        return redirect(url_for("saves.list_saves"))
-    return redirect(url_for("dashboard.home"))
-
-
-@bp.route("/dashboard")
-@require_career
-def home():
-    save = active_save()
+def _dashboard_context(save) -> dict:
+    """Template context shared by the full page and the htmx partial."""
     state = save.state
     current_phase = phase(state.current_week)
-    return render_template(
-        "dashboard.html",
+    return dict(
         state=state,
         user=state.user_player,
         club=state.user_club,
@@ -46,6 +36,19 @@ def home():
     )
 
 
+@bp.route("/")
+def index():
+    if not active_save().has_career:
+        return redirect(url_for("saves.list_saves"))
+    return redirect(url_for("dashboard.home"))
+
+
+@bp.route("/dashboard")
+@require_career
+def home():
+    return render_template("dashboard.html", **_dashboard_context(active_save()))
+
+
 @bp.route("/advance", methods=["POST"])
 @require_career
 def advance():
@@ -57,4 +60,8 @@ def advance():
         focus = TrainingFocus.BALANCED
     save.last_week = advance_week(save.state, save.rng, focus)
     save.persist()
+
+    # htmx swaps just the dashboard panel; a plain POST falls back to a reload.
+    if request.headers.get("HX-Request"):
+        return render_template("partials/dashboard_content.html", **_dashboard_context(save))
     return redirect(url_for("dashboard.home"))
