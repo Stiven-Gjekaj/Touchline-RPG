@@ -81,6 +81,18 @@ def test_advance_supports_htmx_partial_and_plain_fallback(client):
     assert b"<html" not in hx.data  # a fragment, not a full page
 
 
+def test_tactics_page_and_update(client):
+    _start_career(client)
+    assert client.get("/tactics").status_code == 200
+    resp = client.post("/tactics",
+                       data={"formation": "4-3-3", "mentality": "ATTACKING"},
+                       follow_redirects=True)
+    assert resp.status_code == 200
+    tactic = client.application.active_save.state.tactic
+    assert tactic.formation == "4-3-3"
+    assert tactic.mentality.value == "ATTACKING"
+
+
 def test_transfer_inbox_renders(client):
     _start_career(client)
     assert client.get("/transfers").status_code == 200
@@ -141,7 +153,8 @@ def test_core_pages_render_after_career_creation(client):
     assert dashboard.status_code == 200
     assert b"Leo Silva" in dashboard.data
 
-    for path in ("/squad", "/standings", "/fixtures", "/player", "/match/last"):
+    for path in ("/squad", "/standings", "/fixtures", "/player", "/match/last",
+                 "/history", "/cup", "/tactics", "/finances"):
         page = client.get(path)
         assert page.status_code == 200, path
     # The user is highlighted in their own squad.

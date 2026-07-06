@@ -50,7 +50,9 @@ def home():
     user = save.state.user_player
     if user is not None and user.is_retired:
         return render_template(
-            "career_over.html", state=save.state, user=user, club=save.state.user_club
+            "career_over.html", state=save.state, user=user,
+            club=save.state.user_club, totals=save.state.career_totals(),
+            honours=save.state.honours,
         )
     return render_template("dashboard.html", **_dashboard_context(save))
 

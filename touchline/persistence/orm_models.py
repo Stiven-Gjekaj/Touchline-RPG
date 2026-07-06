@@ -25,6 +25,8 @@ class MetaRow(Base):
     user_club_id = Column(Integer)
     next_id = Column(Integer, nullable=False)
     season_id = Column(Integer, nullable=False)
+    formation = Column(String)
+    mentality = Column(String)
 
 
 class CountryRow(Base):
@@ -60,6 +62,7 @@ class ClubRow(Base):
     division_tier = Column(Integer, nullable=False)
     reputation = Column(Integer, nullable=False)
     wage_budget = Column(Integer, nullable=False)
+    balance = Column(Integer, nullable=False, default=0)
 
 
 class PlayerRow(Base):
@@ -85,6 +88,7 @@ class PlayerRow(Base):
     is_user = Column(Boolean, nullable=False)
     is_retired = Column(Boolean, nullable=False)
     contract_id = Column(Integer)
+    sub_position = Column(String)
 
 
 class MatchRow(Base):
@@ -144,3 +148,46 @@ class TransferOfferRow(Base):
     status = Column(String, nullable=False)
     week_created = Column(Integer, nullable=False)
     history = Column(Text, nullable=False, default="[]")
+
+
+class SeasonRecordRow(Base):
+    __tablename__ = "season_records"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    season_number = Column(Integer, nullable=False)
+    club_name = Column(String, nullable=False)
+    division_name = Column(String, nullable=False)
+    appearances = Column(Integer, nullable=False)
+    goals = Column(Integer, nullable=False)
+    assists = Column(Integer, nullable=False)
+    avg_rating = Column(Float, nullable=False)
+    league_position = Column(Integer)
+
+
+class HonourRow(Base):
+    __tablename__ = "honours"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    season_number = Column(Integer, nullable=False)
+    title = Column(String, nullable=False)
+
+
+class CupRow(Base):
+    __tablename__ = "cup"
+    id = Column(Integer, primary_key=True)  # always 1
+    name = Column(String, nullable=False)
+    round_size = Column(Integer, nullable=False)
+    champion_club_id = Column(Integer)
+    is_complete = Column(Boolean, nullable=False)
+
+
+class CupTieRow(Base):
+    __tablename__ = "cup_ties"
+    id = Column(Integer, primary_key=True)
+    round_size = Column(Integer, nullable=False)
+    week_number = Column(Integer, nullable=False)
+    home_club_id = Column(Integer, nullable=False)
+    away_club_id = Column(Integer, nullable=False)
+    home_goals = Column(Integer)
+    away_goals = Column(Integer)
+    winner_club_id = Column(Integer)
+    is_played = Column(Boolean, nullable=False)
+    decided_on_penalties = Column(Boolean, nullable=False)

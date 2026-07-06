@@ -6,11 +6,12 @@ calibrated. Keeping them in one module makes the whole game trivially retunable.
 
 from __future__ import annotations
 
-from touchline.engine.models import Position, TrainingFocus
+from touchline.engine.models import Mentality, Position, SubPosition, TrainingFocus
 
 #: Bumped whenever the persisted schema changes incompatibly. Saves whose stored
 #: value differs are treated as incompatible rather than migrated.
-SCHEMA_VERSION = 1
+#: v2 added sub-positions and tactics; v3 added club finances.
+SCHEMA_VERSION = 3
 
 # --------------------------------------------------------------------------- #
 # Ratings
@@ -37,6 +38,80 @@ PRIMARY_ATTRIBUTE: dict[Position, str] = {
     Position.MF: "passing",
     Position.FW: "shooting",
 }
+
+# --------------------------------------------------------------------------- #
+# Sub-positions and tactics
+# --------------------------------------------------------------------------- #
+
+#: Which broad position a detailed sub-position belongs to.
+SUB_POSITION_TO_BROAD: dict[SubPosition, Position] = {
+    SubPosition.GK: Position.GK,
+    SubPosition.CB: Position.DF,
+    SubPosition.FB: Position.DF,
+    SubPosition.DM: Position.MF,
+    SubPosition.CM: Position.MF,
+    SubPosition.AM: Position.MF,
+    SubPosition.W: Position.FW,
+    SubPosition.ST: Position.FW,
+}
+
+#: Sub-positions to draw from when generating players in each broad slot
+#: (repetition weights the mix).
+SUB_POSITIONS_BY_BROAD: dict[Position, list[SubPosition]] = {
+    Position.GK: [SubPosition.GK],
+    Position.DF: [SubPosition.CB, SubPosition.CB, SubPosition.FB, SubPosition.FB],
+    Position.MF: [SubPosition.DM, SubPosition.CM, SubPosition.CM, SubPosition.AM],
+    Position.FW: [SubPosition.W, SubPosition.ST, SubPosition.ST],
+}
+
+#: Selectable formations: starters per broad position (each sums to 11). The
+#: default matches v1's fixed shape so existing balance is unchanged.
+DEFAULT_FORMATION = "4-4-2"
+FORMATIONS: dict[str, dict[Position, int]] = {
+    "4-4-2": {Position.GK: 1, Position.DF: 4, Position.MF: 4, Position.FW: 2},
+    "4-3-3": {Position.GK: 1, Position.DF: 4, Position.MF: 3, Position.FW: 3},
+    "4-5-1": {Position.GK: 1, Position.DF: 4, Position.MF: 5, Position.FW: 1},
+    "5-3-2": {Position.GK: 1, Position.DF: 5, Position.MF: 3, Position.FW: 2},
+    "3-5-2": {Position.GK: 1, Position.DF: 3, Position.MF: 5, Position.FW: 2},
+}
+
+#: Mentality multipliers on expected goals: (own xG, opponent xG). Attacking
+#: scores more but concedes more; defensive is the reverse.
+MENTALITY_XG: dict[Mentality, tuple[float, float]] = {
+    Mentality.DEFENSIVE: (0.85, 0.80),
+    Mentality.BALANCED: (1.0, 1.0),
+    Mentality.ATTACKING: (1.2, 1.25),
+}
+
+# --------------------------------------------------------------------------- #
+# Cup competition
+# --------------------------------------------------------------------------- #
+
+CUP_NAME = "Touchline Cup"
+#: A power-of-two knockout field, seeded by reputation (the user always plays).
+NUM_CUP_TEAMS = 32
+#: League weeks the cup rounds land on — one per round (32→16→8→4→2→1).
+CUP_WEEKS = [6, 10, 14, 18, 22]
+CUP_ROUND_NAMES: dict[int, str] = {
+    32: "Round of 32",
+    16: "Round of 16",
+    8: "Quarter-final",
+    4: "Semi-final",
+    2: "Final",
+}
+
+# --------------------------------------------------------------------------- #
+# Finances
+# --------------------------------------------------------------------------- #
+
+#: Starting bank balance scales with club reputation.
+CLUB_BALANCE_PER_REP = 5000
+#: Clubs run a small operating surplus each season (income vs wages), so they
+#: stay solvent by construction — no bankruptcy spiral to manage in v1.1.
+OPERATING_SURPLUS = 0.05
+#: Prize money per finishing place, by tier (top divisions pay more). A club
+#: earns this times (clubs_per_tier - position + 1).
+PRIZE_MONEY_PER_PLACE: dict[int, int] = {1: 40000, 2: 20000, 3: 10000}
 
 # --------------------------------------------------------------------------- #
 # World / league structure

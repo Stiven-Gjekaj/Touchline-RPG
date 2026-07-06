@@ -1,10 +1,13 @@
-"""The user's club squad view."""
+"""The user's club: squad view and tactics."""
 
 from __future__ import annotations
 
-from flask import Blueprint, render_template
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 
-from touchline.engine.models import Position
+from touchline.engine import constants as C
+from touchline.engine import finance
+from touchline.engine.career import set_tactic
+from touchline.engine.models import Mentality, Position
 from touchline.web.helpers import active_save, require_career
 
 bp = Blueprint("club", __name__)
@@ -28,3 +31,44 @@ def squad():
         players=players,
         user_id=state.user_player_id,
     )
+
+
+@bp.route("/finances")
+@require_career
+def finances():
+    state = active_save().state
+    club = state.user_club
+    return render_template(
+        "finances.html",
+        state=state,
+        club=club,
+        wage_bill=finance.weekly_wage_bill(state, club),
+        squad_value=finance.squad_value(state, club),
+    )
+
+
+@bp.route("/tactics", methods=["GET"])
+@require_career
+def tactics():
+    state = active_save().state
+    return render_template(
+        "tactics.html",
+        state=state,
+        tactic=state.tactic,
+        formations=list(C.FORMATIONS.keys()),
+        mentalities=list(Mentality),
+    )
+
+
+@bp.route("/tactics", methods=["POST"])
+@require_career
+def update_tactics():
+    save = active_save()
+    set_tactic(
+        save.state,
+        request.form.get("formation", C.DEFAULT_FORMATION),
+        request.form.get("mentality", Mentality.BALANCED.value),
+    )
+    save.persist()
+    flash("Tactics updated.", "success")
+    return redirect(url_for("club.tactics"))

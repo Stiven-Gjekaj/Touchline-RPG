@@ -55,6 +55,29 @@ def test_resume_after_advancing(save_dir):
     assert resumed.user_player.overall() == state.user_player.overall()
 
 
+def test_incompatible_save_is_listed_but_not_loadable(save_dir):
+    import pytest
+    from sqlalchemy import text
+
+    from touchline.persistence.db import make_engine
+    from touchline.persistence.repositories import IncompatibleSaveError
+
+    state = new_career("Old Save", "A", "B", Position.MF, random.Random(1))
+    slug = sm.create_save(state)
+
+    # Tamper the stored version so it looks like a save from another release.
+    engine = make_engine(sm._path_for(slug))
+    with engine.begin() as conn:
+        conn.execute(text("UPDATE meta SET schema_version = 1 WHERE id = 1"))
+    engine.dispose()
+
+    infos = sm.list_saves()
+    assert len(infos) == 1
+    assert infos[0].compatible is False
+    with pytest.raises(IncompatibleSaveError):
+        sm.load_slot(slug)
+
+
 def test_slug_collision_gets_suffix(save_dir):
     a = new_career("Same Name", "A", "A", Position.MF, random.Random(1))
     b = new_career("Same Name", "B", "B", Position.MF, random.Random(2))

@@ -11,6 +11,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from touchline.config import save_dir
@@ -18,7 +19,7 @@ from touchline.engine.constants import SCHEMA_VERSION
 from touchline.engine.state import GameState
 from touchline.persistence import orm_models as orm
 from touchline.persistence.db import make_engine
-from touchline.persistence.repositories import load_state, save_state
+from touchline.persistence.repositories import load_state, save_state, schema_version
 
 
 @dataclass
@@ -72,9 +73,25 @@ def _read_info(path: Path) -> SaveInfo | None:
     engine = make_engine(path)
     try:
         with Session(engine) as session:
-            meta = session.get(orm.MetaRow, 1)
-            if meta is None:
+            version = schema_version(session)
+            if version is None:
                 return None
+            if version != SCHEMA_VERSION:
+                # Read only always-present columns; the full ORM row may have
+                # columns this older file lacks.
+                row = session.execute(text(
+                    "SELECT save_name, created_at, last_played_at FROM meta WHERE id = 1"
+                )).first()
+                return SaveInfo(
+                    slug=path.stem, path=path,
+                    save_name=row[0] if row else path.stem,
+                    created_at=row[1] if row else "",
+                    last_played_at=row[2] if row else "",
+                    season_number=0, current_week=0,
+                    player_name="?", club_name="?", compatible=False,
+                )
+
+            meta = session.get(orm.MetaRow, 1)
             player = (session.get(orm.PlayerRow, meta.user_player_id)
                       if meta.user_player_id else None)
             club = (session.get(orm.ClubRow, meta.user_club_id)
@@ -88,7 +105,7 @@ def _read_info(path: Path) -> SaveInfo | None:
                 player_name=(f"{player.first_name} {player.last_name}"
                              if player else "?"),
                 club_name=club.name if club else "?",
-                compatible=(meta.schema_version == SCHEMA_VERSION),
+                compatible=True,
             )
     finally:
         engine.dispose()

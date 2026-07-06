@@ -13,12 +13,17 @@ from touchline.engine.models import (
     Club,
     Contract,
     Country,
+    Cup,
+    CupTie,
+    Honour,
     League,
     Match,
     MatchEvent,
     MatchPlayerStat,
     Player,
     Season,
+    SeasonRecord,
+    Tactic,
     TransferOffer,
 )
 
@@ -44,6 +49,17 @@ class GameState:
     transfer_offers: dict[int, TransferOffer] = field(default_factory=dict)
     events: list[MatchEvent] = field(default_factory=list)
     player_stats: list[MatchPlayerStat] = field(default_factory=list)
+
+    # Career history for the user's player (survives the yearly data clear).
+    season_records: list[SeasonRecord] = field(default_factory=list)
+    honours: list[Honour] = field(default_factory=list)
+
+    # The user's chosen tactic (NPCs use the default formation/mentality).
+    tactic: Tactic = field(default_factory=Tactic)
+
+    # The season's knockout cup, if one is running.
+    cup: Cup | None = None
+    cup_ties: list[CupTie] = field(default_factory=list)
 
     _next_id: int = 1
 
@@ -116,6 +132,16 @@ class GameState:
                 return match
         return None
 
+    def user_cup_tie_in_week(self, week_number: int):
+        """The user's cup tie in a given week, if any."""
+        if self.user_club_id is None:
+            return None
+        for tie in self.cup_ties:
+            if (tie.week_number == week_number
+                    and self.user_club_id in (tie.home_club_id, tie.away_club_id)):
+                return tie
+        return None
+
     def contract_for(self, player_id: int) -> Contract | None:
         player = self.players.get(player_id)
         if player is None or player.contract_id is None:
@@ -132,3 +158,22 @@ class GameState:
             if o.player_id == self.user_player_id
             and o.status == OfferStatus.PENDING_USER_DECISION
         ]
+
+    def career_totals(self) -> dict:
+        """Lifetime totals aggregated from the user's season records."""
+        apps = sum(r.appearances for r in self.season_records)
+        goals = sum(r.goals for r in self.season_records)
+        assists = sum(r.assists for r in self.season_records)
+        rated = [(r.avg_rating, r.appearances)
+                 for r in self.season_records if r.appearances]
+        weighted = sum(rating * n for rating, n in rated)
+        total_apps = sum(n for _, n in rated)
+        avg = round(weighted / total_apps, 2) if total_apps else 0.0
+        return {
+            "seasons": len(self.season_records),
+            "appearances": apps,
+            "goals": goals,
+            "assists": assists,
+            "avg_rating": avg,
+            "honours": len(self.honours),
+        }

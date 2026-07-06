@@ -34,8 +34,13 @@ def _save_then_load(state, tmp_path):
 
 
 def test_round_trip_preserves_scalars(tmp_path):
+    from touchline.engine.career import set_tactic
+
     state = _seeded_state(1)
+    set_tactic(state, "4-3-3", "ATTACKING")  # exercise non-default tactic
     loaded = _save_then_load(state, tmp_path)
+    # Sub-positions survive too (dataclass equality covers the field).
+    assert loaded.user_player.sub_position == state.user_player.sub_position
 
     assert loaded.save_name == state.save_name
     assert loaded.user_player_id == state.user_player_id
@@ -44,6 +49,7 @@ def test_round_trip_preserves_scalars(tmp_path):
     assert loaded.season.number == state.season.number
     assert loaded.season.current_week == state.season.current_week
     assert loaded.country == state.country
+    assert loaded.tactic == state.tactic
 
 
 def test_round_trip_preserves_every_entity(tmp_path):
@@ -78,6 +84,31 @@ def test_loaded_state_is_playable(tmp_path):
     week_before = loaded.season.current_week
     advance_week(loaded, random.Random(0))
     assert loaded.season.current_week != week_before or loaded.season.number > state.season.number
+
+
+def test_round_trip_preserves_cup(tmp_path):
+    rng = random.Random(4)
+    state = new_career("Cup", "Leo", "Silva", Position.FW, rng)
+    for _ in range(12):  # play a couple of cup rounds
+        advance_week(state, rng)
+    assert state.cup is not None
+    assert any(t.is_played for t in state.cup_ties)
+
+    loaded = _save_then_load(state, tmp_path)
+    assert loaded.cup == state.cup
+    assert {t.id: t for t in loaded.cup_ties} == {t.id: t for t in state.cup_ties}
+
+
+def test_round_trip_preserves_career_history(tmp_path):
+    rng = random.Random(9)
+    state = new_career("History", "Leo", "Silva", Position.FW, rng)
+    for _ in range(28):  # cross a season boundary so a record is written
+        advance_week(state, rng)
+    assert state.season_records  # sanity: at least one season recorded
+
+    loaded = _save_then_load(state, tmp_path)
+    assert loaded.season_records == state.season_records
+    assert loaded.honours == state.honours
 
 
 def test_incompatible_schema_version_raises(tmp_path):

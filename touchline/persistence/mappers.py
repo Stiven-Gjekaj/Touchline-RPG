@@ -12,7 +12,10 @@ from touchline.engine.models import (
     Club,
     Contract,
     Country,
+    Cup,
+    CupTie,
     EventType,
+    Honour,
     League,
     Match,
     MatchEvent,
@@ -21,6 +24,8 @@ from touchline.engine.models import (
     Player,
     Position,
     Season,
+    SeasonRecord,
+    SubPosition,
     TransferOffer,
 )
 from touchline.persistence import orm_models as orm
@@ -61,13 +66,15 @@ def league_from_row(row: orm.LeagueRow) -> League:
 def club_to_row(club: Club) -> orm.ClubRow:
     return orm.ClubRow(id=club.id, name=club.name, short_name=club.short_name,
                        league_id=club.league_id, division_tier=club.division_tier,
-                       reputation=club.reputation, wage_budget=club.wage_budget)
+                       reputation=club.reputation, wage_budget=club.wage_budget,
+                       balance=club.balance)
 
 
 def club_from_row(row: orm.ClubRow) -> Club:
     return Club(id=row.id, name=row.name, short_name=row.short_name,
                 league_id=row.league_id, division_tier=row.division_tier,
-                reputation=row.reputation, wage_budget=row.wage_budget)
+                reputation=row.reputation, wage_budget=row.wage_budget,
+                balance=row.balance)
 
 
 def player_to_row(player: Player) -> orm.PlayerRow:
@@ -82,6 +89,7 @@ def player_to_row(player: Player) -> orm.PlayerRow:
         injury_weeks_remaining=player.injury_weeks_remaining,
         is_user=player.is_user, is_retired=player.is_retired,
         contract_id=player.contract_id,
+        sub_position=player.sub_position.value if player.sub_position else None,
     )
 
 
@@ -95,6 +103,7 @@ def player_from_row(row: orm.PlayerRow) -> Player:
         morale=row.morale, condition=row.condition,
         injury_weeks_remaining=row.injury_weeks_remaining, is_user=row.is_user,
         is_retired=row.is_retired, contract_id=row.contract_id,
+        sub_position=SubPosition(row.sub_position) if row.sub_position else None,
     )
 
 
@@ -179,3 +188,56 @@ def offer_from_row(row: orm.TransferOfferRow) -> TransferOffer:
                          status=OfferStatus(row.status),
                          week_created=row.week_created,
                          history=json.loads(row.history or "[]"))
+
+
+def season_record_to_row(record: SeasonRecord) -> orm.SeasonRecordRow:
+    return orm.SeasonRecordRow(
+        season_number=record.season_number, club_name=record.club_name,
+        division_name=record.division_name, appearances=record.appearances,
+        goals=record.goals, assists=record.assists, avg_rating=record.avg_rating,
+        league_position=record.league_position)
+
+
+def season_record_from_row(row: orm.SeasonRecordRow) -> SeasonRecord:
+    return SeasonRecord(
+        season_number=row.season_number, club_name=row.club_name,
+        division_name=row.division_name, appearances=row.appearances,
+        goals=row.goals, assists=row.assists, avg_rating=row.avg_rating,
+        league_position=row.league_position)
+
+
+def honour_to_row(honour: Honour) -> orm.HonourRow:
+    return orm.HonourRow(season_number=honour.season_number, title=honour.title)
+
+
+def honour_from_row(row: orm.HonourRow) -> Honour:
+    return Honour(season_number=row.season_number, title=row.title)
+
+
+def cup_to_row(cup: Cup) -> orm.CupRow:
+    return orm.CupRow(id=1, name=cup.name, round_size=cup.round_size,
+                      champion_club_id=cup.champion_club_id,
+                      is_complete=cup.is_complete)
+
+
+def cup_from_row(row: orm.CupRow) -> Cup:
+    return Cup(name=row.name, round_size=row.round_size,
+               champion_club_id=row.champion_club_id, is_complete=row.is_complete)
+
+
+def cup_tie_to_row(tie: CupTie) -> orm.CupTieRow:
+    return orm.CupTieRow(
+        id=tie.id, round_size=tie.round_size, week_number=tie.week_number,
+        home_club_id=tie.home_club_id, away_club_id=tie.away_club_id,
+        home_goals=tie.home_goals, away_goals=tie.away_goals,
+        winner_club_id=tie.winner_club_id, is_played=tie.is_played,
+        decided_on_penalties=tie.decided_on_penalties)
+
+
+def cup_tie_from_row(row: orm.CupTieRow) -> CupTie:
+    return CupTie(
+        id=row.id, round_size=row.round_size, week_number=row.week_number,
+        home_club_id=row.home_club_id, away_club_id=row.away_club_id,
+        home_goals=row.home_goals, away_goals=row.away_goals,
+        winner_club_id=row.winner_club_id, is_played=row.is_played,
+        decided_on_penalties=row.decided_on_penalties)

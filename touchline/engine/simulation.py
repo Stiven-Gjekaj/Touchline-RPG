@@ -25,14 +25,9 @@ from touchline.engine.models import (
 from touchline.engine.rng import clamp, weighted_choice
 from touchline.engine.state import GameState
 
-#: Number of starters per position group (a fixed generic shape; no tactics yet).
-FORMATION: dict[Position, int] = {
-    Position.GK: 1,
-    Position.DF: 4,
-    Position.MF: 4,
-    Position.FW: 2,
-}
-STARTING_XI_SIZE = sum(FORMATION.values())  # 11
+#: Default starters per position group (the user can pick another formation).
+DEFAULT_FORMATION: dict[Position, int] = C.FORMATIONS[C.DEFAULT_FORMATION]
+STARTING_XI_SIZE = 11  # every formation fields eleven
 
 
 @dataclass
@@ -85,15 +80,18 @@ def goal_share_weight(player: Player) -> float:
 
 
 def select_starting_xi(
-    squad: list[Player], force_include: Player | None = None
+    squad: list[Player],
+    force_include: Player | None = None,
+    formation: dict[Position, int] | None = None,
 ) -> list[Player]:
     """Pick a starting XI by best overall per position group.
 
     ``force_include`` (the user's player) is guaranteed a place when fit — a
-    deliberate v1 simplification so the user always plays; "earn your place"
-    is a candidate for a later version. Short position groups are back-filled
-    from the best remaining outfield players rather than failing.
+    deliberate simplification so the user always plays. ``formation`` sets the
+    starters per position group (defaults to 4-4-2). Short position groups are
+    back-filled from the best remaining outfield players rather than failing.
     """
+    formation = formation or DEFAULT_FORMATION
     available = [p for p in squad if not p.is_injured]
     xi: list[Player] = []
     if force_include is not None and not force_include.is_injured:
@@ -108,7 +106,7 @@ def select_starting_xi(
         players.sort(key=lambda p: p.overall(), reverse=True)
 
     # Fill each position group up to its formation count.
-    for position, count in FORMATION.items():
+    for position, count in formation.items():
         already = sum(1 for p in xi if p.position == position)
         for player in by_position[position][: max(0, count - already)]:
             xi.append(player)
@@ -152,15 +150,35 @@ def simulate_match(
     home = state.clubs[match.home_club_id]
     away = state.clubs[match.away_club_id]
     user = state.user_player
-    home_force = user if user is not None and user.club_id == home.id else None
-    away_force = user if user is not None and user.club_id == away.id else None
+    home_is_user = user is not None and user.club_id == home.id
+    away_is_user = user is not None and user.club_id == away.id
+    home_force = user if home_is_user else None
+    away_force = user if away_is_user else None
 
-    home_xi = select_starting_xi(state.squad(home.id), home_force)
-    away_xi = select_starting_xi(state.squad(away.id), away_force)
+    tactic = state.tactic
+    user_formation = C.FORMATIONS.get(tactic.formation) if tactic else None
+    home_xi = select_starting_xi(
+        state.squad(home.id), home_force, user_formation if home_is_user else None)
+    away_xi = select_starting_xi(
+        state.squad(away.id), away_force, user_formation if away_is_user else None)
 
     diff = team_strength(home_xi, is_home=True) - team_strength(away_xi, is_home=False)
-    home_xg = max(C.BASE_XG + diff / C.XG_SCALE_FACTOR, C.MIN_XG)
-    away_xg = max(C.BASE_XG - diff / C.XG_SCALE_FACTOR, C.MIN_XG)
+    home_xg = C.BASE_XG + diff / C.XG_SCALE_FACTOR
+    away_xg = C.BASE_XG - diff / C.XG_SCALE_FACTOR
+
+    # The user's mentality nudges expected goals: their side scores and concedes
+    # more when attacking, fewer of each when defensive.
+    if (home_is_user or away_is_user) and tactic is not None:
+        own_mult, opp_mult = C.MENTALITY_XG[tactic.mentality]
+        if home_is_user:
+            home_xg *= own_mult
+            away_xg *= opp_mult
+        else:
+            away_xg *= own_mult
+            home_xg *= opp_mult
+
+    home_xg = max(home_xg, C.MIN_XG)
+    away_xg = max(away_xg, C.MIN_XG)
     home_goals = poisson(home_xg, rng)
     away_goals = poisson(away_xg, rng)
 

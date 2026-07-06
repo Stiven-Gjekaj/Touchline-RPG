@@ -24,12 +24,33 @@ ATTRIBUTE_NAMES: tuple[str, ...] = (
 
 
 class Position(str, Enum):
-    """Broad player position. Sub-positions are a post-v1 extension."""
+    """Broad player position, used for squad structure and the match formation."""
 
     GK = "GK"
     DF = "DF"
     MF = "MF"
     FW = "FW"
+
+
+class SubPosition(str, Enum):
+    """Detailed role within a broad position (display + tactical flavour)."""
+
+    GK = "GK"
+    CB = "CB"   # centre-back
+    FB = "FB"   # full-back
+    DM = "DM"   # defensive midfielder
+    CM = "CM"   # central midfielder
+    AM = "AM"   # attacking midfielder
+    W = "W"     # winger
+    ST = "ST"   # striker
+
+
+class Mentality(str, Enum):
+    """Team attacking intent — a risk/reward dial in the match simulation."""
+
+    DEFENSIVE = "DEFENSIVE"
+    BALANCED = "BALANCED"
+    ATTACKING = "ATTACKING"
 
 
 class EventType(str, Enum):
@@ -89,10 +110,16 @@ class Player:
     is_user: bool = False
     is_retired: bool = False
     contract_id: int | None = None
+    sub_position: SubPosition | None = None
 
     @property
     def name(self) -> str:
         return f"{self.first_name} {self.last_name}"
+
+    @property
+    def role(self) -> str:
+        """Detailed role label, falling back to the broad position."""
+        return self.sub_position.value if self.sub_position else self.position.value
 
     @property
     def is_injured(self) -> bool:
@@ -140,6 +167,7 @@ class Club:
     division_tier: int
     reputation: int
     wage_budget: int
+    balance: int = 0
 
 
 @dataclass
@@ -225,3 +253,61 @@ class TransferOffer:
     status: OfferStatus
     week_created: int
     history: list[str] = field(default_factory=list)
+
+
+@dataclass
+class SeasonRecord:
+    """A completed season in the user's career (kept after the yearly clear)."""
+
+    season_number: int
+    club_name: str
+    division_name: str
+    appearances: int
+    goals: int
+    assists: int
+    avg_rating: float
+    league_position: int | None
+
+
+@dataclass
+class Honour:
+    """A trophy or achievement the user earned in a given season."""
+
+    season_number: int
+    title: str
+
+
+@dataclass
+class Tactic:
+    """The user's chosen setup (NPCs use the default). Formation is a key into
+    ``constants.FORMATIONS``."""
+
+    formation: str = "4-4-2"
+    mentality: Mentality = Mentality.BALANCED
+
+
+@dataclass
+class Cup:
+    """A single-elimination knockout cup running alongside the league."""
+
+    name: str
+    round_size: int  # teams remaining in the current round (32, 16, 8, 4, 2, 1)
+    champion_club_id: int | None = None
+    is_complete: bool = False
+
+
+@dataclass
+class CupTie:
+    """One knockout tie. Result fields fill in when it is played; a draw is
+    settled on penalties (no replays in v1.1)."""
+
+    id: int
+    round_size: int
+    week_number: int
+    home_club_id: int
+    away_club_id: int
+    home_goals: int | None = None
+    away_goals: int | None = None
+    winner_club_id: int | None = None
+    is_played: bool = False
+    decided_on_penalties: bool = False

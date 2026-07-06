@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Career History — Touchline RPG{% endblock %}
+{% block content %}
+<hgroup>
+  <h2>Career history</h2>
+  <p>{{ user.name }} · {{ totals.seasons }} season(s)</p>
+</hgroup>
+
+<div class="tl-status">
+  <div class="tl-stat"><div class="tl-stat-label">Appearances</div><div class="tl-stat-value">{{ totals.appearances }}</div></div>
+  <div class="tl-stat"><div class="tl-stat-label">Goals</div><div class="tl-stat-value">{{ totals.goals }}</div></div>
+  <div class="tl-stat"><div class="tl-stat-label">Assists</div><div class="tl-stat-value">{{ totals.assists }}</div></div>
+  <div class="tl-stat"><div class="tl-stat-label">Avg rating</div><div class="tl-stat-value">{{ totals.avg_rating }}</div></div>
+  <div class="tl-stat"><div class="tl-stat-label">Honours</div><div class="tl-stat-value">{{ totals.honours }}</div></div>
+</div>
+
+<article>
+  <header><strong>Honours</strong></header>
+  {% if honours %}
+    <ul>
+      {% for h in honours %}<li>🏆 {{ h.title }} <small>(Season {{ h.season_number }})</small></li>{% endfor %}
+    </ul>
+  {% else %}
+    <p>No honours yet. Win your division to lift your first trophy.</p>
+  {% endif %}
+</article>
+
+<h3>Season by season</h3>
+{% if records %}
+  <div class="tl-table-wrap">
+    <table class="tl-compact striped">
+      <thead>
+        <tr><th>Season</th><th>Club</th><th>Division</th><th>Pos</th><th>Apps</th><th>G</th><th>A</th><th>Avg</th></tr>
+      </thead>
+      <tbody>
+        {% for r in records %}
+          <tr>
+            <td>{{ r.season_number }}</td>
+            <td>{{ r.club_name }}</td>
+            <td>{{ r.division_name }}</td>
+            <td>{{ r.league_position or '—' }}</td>
+            <td>{{ r.appearances }}</td>
+            <td>{{ r.goals }}</td>
+            <td>{{ r.assists }}</td>
+            <td>{{ r.avg_rating }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p>Your first season is still in progress — records appear here once it ends.</p>
+{% endif %}
+{% endblock %}

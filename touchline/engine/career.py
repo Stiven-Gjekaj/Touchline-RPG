@@ -11,9 +11,16 @@ import random
 from dataclasses import dataclass, field
 
 from touchline.engine import constants as C
-from touchline.engine import progression, transfers
+from touchline.engine import cup, finance, progression, transfers
 from touchline.engine.generation import create_user_player, generate_world
-from touchline.engine.models import Club, Position, Season, TrainingFocus
+from touchline.engine.models import (
+    Club,
+    Honour,
+    Position,
+    Season,
+    SeasonRecord,
+    TrainingFocus,
+)
 from touchline.engine.scheduling import generate_season_fixtures
 from touchline.engine.season_calendar import (
     Phase,
@@ -105,6 +112,7 @@ class WeekResult:
     week: int
     phase: Phase
     user_match_result: MatchResult | None = None
+    user_cup_result: MatchResult | None = None
     messages: list[str] = field(default_factory=list)
     season_ended: bool = False
     new_season_started: bool = False
@@ -121,7 +129,20 @@ def new_career(
     state = generate_world(save_name, rng)
     create_user_player(state, first_name, last_name, position, rng)
     generate_season_fixtures(state, rng)
+    cup.start_cup(state, rng)
     return state
+
+
+def set_tactic(state: GameState, formation: str, mentality: str) -> None:
+    """Update the user's tactic, ignoring unknown formations/mentalities."""
+    from touchline.engine.models import Mentality
+
+    if formation in C.FORMATIONS:
+        state.tactic.formation = formation
+    try:
+        state.tactic.mentality = Mentality(mentality)
+    except ValueError:
+        pass
 
 
 def advance_week(
@@ -138,6 +159,9 @@ def advance_week(
 
     if current_phase == Phase.MATCH:
         result.user_match_result = _play_week_matches(state, week, rng)
+        if cup.is_cup_week(week):
+            result.user_cup_result, cup_messages = cup.play_cup_week(state, week, rng)
+            result.messages.extend(cup_messages)
     elif is_training_week(week):
         progression.apply_training_week(state, rng, user_focus)
 
@@ -177,16 +201,22 @@ def _play_week_matches(
 # --------------------------------------------------------------------------- #
 
 
-def _run_end_of_season(state: GameState, rng: random.Random, result: WeekResult) -> None:
-    user_club = state.user_club
-    if user_club is not None:
-        position = league_position(state, user_club.id, user_club.league_id)
-        league = state.leagues[user_club.league_id]
-        result.messages.append(
-            f"{state.season.year_label} complete — {user_club.name} finished "
-            f"{_ordinal(position)} in {league.name}."
-        )
+def _final_positions(state: GameState) -> dict[int, int]:
+    """Map each club id to its 1-based finishing position in its division."""
+    positions: dict[int, int] = {}
+    for tier in range(1, C.NUM_TIERS + 1):
+        league = state.league_by_tier(tier)
+        for index, row in enumerate(compute_standings(state, league.id), start=1):
+            positions[row.club.id] = index
+    return positions
 
+
+def _run_end_of_season(state: GameState, rng: random.Random, result: WeekResult) -> None:
+    _record_user_season(state, result)
+    # Settle finances on the season's final table, before promotion/relegation
+    # moves clubs between divisions.
+    positions = _final_positions(state)
+    finance.settle_season(state, lambda club: positions.get(club.id, C.CLUBS_PER_TIER))
     _apply_promotion_relegation(state, result)
 
     # Age every active player by a year, then process retirements, youth
@@ -208,6 +238,42 @@ def retire_user(state: GameState) -> list[str]:
         return []
     progression.retire_player(state, user)
     return [f"{user.name} has retired from football. What a career."]
+
+
+def _record_user_season(state: GameState, result: WeekResult) -> None:
+    """Append the just-finished season to the user's career history + honours."""
+    user = state.user_player
+    club = state.user_club
+    if user is None or club is None or user.is_retired:
+        return
+    league = state.leagues[club.league_id]
+    position = league_position(state, club.id, club.league_id)
+    stats = [s for s in state.player_stats if s.player_id == user.id]
+    apps = len(stats)
+    avg = round(sum(s.rating for s in stats) / apps, 2) if apps else 0.0
+
+    state.season_records.append(SeasonRecord(
+        season_number=state.season.number,
+        club_name=club.name,
+        division_name=league.name,
+        appearances=apps,
+        goals=sum(s.goals for s in stats),
+        assists=sum(s.assists for s in stats),
+        avg_rating=avg,
+        league_position=position,
+    ))
+    result.messages.append(
+        f"{state.season.year_label} complete — {club.name} finished "
+        f"{_ordinal(position)} in {league.name}."
+    )
+    if position == 1:
+        title = f"{league.name} title"
+        state.honours.append(Honour(state.season.number, title))
+        result.messages.append(f"🏆 Champions! You won the {title}.")
+    if league.tier > 1 and position <= league.promotion_slots:
+        higher = state.league_by_tier(league.tier - 1)
+        state.honours.append(Honour(state.season.number, f"Promotion to {higher.name}"))
+        result.messages.append(f"⬆️ Promoted to {higher.name}!")
 
 
 def _apply_promotion_relegation(state: GameState, result: WeekResult) -> None:
@@ -255,6 +321,7 @@ def _start_new_season(state: GameState, rng: random.Random, result: WeekResult) 
     state.player_stats.clear()
     state.season = new_season
     generate_season_fixtures(state, rng)
+    cup.start_cup(state, rng)
     result.new_season_started = True
     result.messages.append(f"A new season begins: {new_season.year_label}.")
 

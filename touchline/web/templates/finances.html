@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Finances — Touchline RPG{% endblock %}
+{% block content %}
+<hgroup>
+  <h2>Finances</h2>
+  <p>{{ club.name }}</p>
+</hgroup>
+
+<div class="tl-status">
+  <div class="tl-stat">
+    <div class="tl-stat-label">Bank balance</div>
+    <div class="tl-stat-value">{{ "{:,}".format(club.balance) }}</div>
+  </div>
+  <div class="tl-stat">
+    <div class="tl-stat-label">Weekly wage bill</div>
+    <div class="tl-stat-value">{{ "{:,}".format(wage_bill) }}</div>
+  </div>
+  <div class="tl-stat">
+    <div class="tl-stat-label">Squad value</div>
+    <div class="tl-stat-value">{{ "{:,}".format(squad_value) }}</div>
+  </div>
+  <div class="tl-stat">
+    <div class="tl-stat-label">Reputation</div>
+    <div class="tl-stat-value">{{ club.reputation }}</div>
+  </div>
+</div>
+
+<article>
+  <header><strong>How it works</strong></header>
+  <p>Clubs earn prize money for a higher league finish and settle their books
+     each season. Your balance sets what a club can spend on transfer fees —
+     richer clubs can chase bigger signings, and when you're sold the fee moves
+     between the clubs involved.</p>
+</article>
+{% endblock %}
