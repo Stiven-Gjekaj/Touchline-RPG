@@ -21,6 +21,13 @@
   </div>
 </div>
 
+{% if pending_offers %}
+  <div class="tl-flash tl-flash-info">
+    📩 You have {{ pending_offers }} transfer offer(s) waiting.
+    <a href="{{ url_for('transfers.inbox') }}">Open your inbox →</a>
+  </div>
+{% endif %}
+
 {% if last_week %}
   {% set result = last_week.user_match_result %}
   {% if result and result.recap_lines %}

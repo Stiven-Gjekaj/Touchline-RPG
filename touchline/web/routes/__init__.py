@@ -6,7 +6,15 @@ from flask import Flask
 
 
 def register_blueprints(app: Flask) -> None:
-    from touchline.web.routes import club, dashboard, match, player, saves, season
+    from touchline.web.routes import (
+        club,
+        dashboard,
+        match,
+        player,
+        saves,
+        season,
+        transfers,
+    )
 
     app.register_blueprint(dashboard.bp)
     app.register_blueprint(saves.bp)
@@ -14,3 +22,4 @@ def register_blueprints(app: Flask) -> None:
     app.register_blueprint(club.bp)
     app.register_blueprint(player.bp)
     app.register_blueprint(match.bp)
+    app.register_blueprint(transfers.bp)

@@ -11,11 +11,16 @@ import random
 from dataclasses import dataclass, field
 
 from touchline.engine import constants as C
-from touchline.engine import progression
+from touchline.engine import progression, transfers
 from touchline.engine.generation import create_user_player, generate_world
 from touchline.engine.models import Club, Position, Season, TrainingFocus
 from touchline.engine.scheduling import generate_season_fixtures
-from touchline.engine.season_calendar import Phase, is_training_week, phase
+from touchline.engine.season_calendar import (
+    Phase,
+    is_training_week,
+    is_window_open,
+    phase,
+)
 from touchline.engine.simulation import MatchResult, simulate_match
 from touchline.engine.state import GameState
 
@@ -136,7 +141,8 @@ def advance_week(
     elif is_training_week(week):
         progression.apply_training_week(state, rng, user_focus)
 
-    # (Transfer-window interest is rolled here in a later milestone.)
+    if is_window_open(week):
+        result.messages.extend(transfers.roll_transfer_interest(state, rng))
 
     if week == C.SEASON_END_WEEK:
         _run_end_of_season(state, rng, result)

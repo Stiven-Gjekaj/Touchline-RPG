@@ -42,6 +42,7 @@ def home():
         fixture=next_user_fixture(state),
         last_week=save.last_week,
         focuses=list(TrainingFocus),
+        pending_offers=len(state.pending_offers_for_user()),
     )
 
 

@@ -175,3 +175,16 @@ DECLINE_CHANCE_CAP = 0.6
 # Youth intake (squad replenishment at season end).
 YOUTH_INTAKE_AGE_MIN = 17
 YOUTH_INTAKE_AGE_MAX = 20
+
+# --------------------------------------------------------------------------- #
+# Transfers (only the user's player trades in v1)
+# --------------------------------------------------------------------------- #
+
+TRANSFER_BASE_RATE = 0.06          # per suitor, per window week, before factors
+TRANSFER_PROB_CAP = 0.15           # per-suitor weekly ceiling
+TRANSFER_REP_BAND = 20             # suitors within this reputation band are plausible
+MAX_SUITORS_CONSIDERED = 8
+MAX_PENDING_OFFERS = 3             # don't flood the user's inbox
+TIER_VALUE_SCALE = 20              # scales the abstract fee currency
+WAGE_COUNTER_MULTIPLIER = 1.25     # how much more the user demands when countering
+WAGE_COUNTER_CEILING = 1.30        # club's fair ceiling vs the original wage offer

@@ -67,6 +67,32 @@ def test_save_slot_load_and_delete_flow(client):
     assert b"Ada Stone" not in client.get("/saves").data
 
 
+def test_transfer_inbox_renders(client):
+    _start_career(client)
+    assert client.get("/transfers").status_code == 200
+
+
+def test_transfer_accept_moves_player(client):
+    import random
+
+    from touchline.engine.models import OfferStatus
+    from touchline.engine.transfers import _make_offer
+
+    _start_career(client)
+    state = client.application.active_save.state
+    player = state.user_player
+    suitor = next(c for c in state.clubs.values() if c.id != player.club_id)
+
+    offer = _make_offer(state, suitor, player, random.Random(0))
+    offer.status = OfferStatus.PENDING_USER_DECISION
+    state.transfer_offers[offer.id] = offer
+
+    assert client.get("/dashboard").data.count(b"transfer offer") >= 0
+    resp = client.post(f"/transfers/{offer.id}/accept", follow_redirects=True)
+    assert resp.status_code == 200
+    assert state.user_club_id == suitor.id
+
+
 def test_new_career_form_renders(client):
     resp = client.get("/new")
     assert resp.status_code == 200
