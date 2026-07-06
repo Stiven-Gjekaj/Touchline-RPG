@@ -13,6 +13,8 @@ from touchline.engine.models import (
     Club,
     Contract,
     Country,
+    Cup,
+    CupTie,
     Honour,
     League,
     Match,
@@ -54,6 +56,10 @@ class GameState:
 
     # The user's chosen tactic (NPCs use the default formation/mentality).
     tactic: Tactic = field(default_factory=Tactic)
+
+    # The season's knockout cup, if one is running.
+    cup: Cup | None = None
+    cup_ties: list[CupTie] = field(default_factory=list)
 
     _next_id: int = 1
 
@@ -124,6 +130,16 @@ class GameState:
         for match in self.matches_in_week(week_number):
             if self.user_club_id in (match.home_club_id, match.away_club_id):
                 return match
+        return None
+
+    def user_cup_tie_in_week(self, week_number: int):
+        """The user's cup tie in a given week, if any."""
+        if self.user_club_id is None:
+            return None
+        for tie in self.cup_ties:
+            if (tie.week_number == week_number
+                    and self.user_club_id in (tie.home_club_id, tie.away_club_id)):
+                return tie
         return None
 
     def contract_for(self, player_id: int) -> Contract | None:

@@ -283,3 +283,30 @@ class Tactic:
 
     formation: str = "4-4-2"
     mentality: Mentality = Mentality.BALANCED
+
+
+@dataclass
+class Cup:
+    """A single-elimination knockout cup running alongside the league."""
+
+    name: str
+    round_size: int  # teams remaining in the current round (32, 16, 8, 4, 2, 1)
+    champion_club_id: int | None = None
+    is_complete: bool = False
+
+
+@dataclass
+class CupTie:
+    """One knockout tie. Result fields fill in when it is played; a draw is
+    settled on penalties (no replays in v1.1)."""
+
+    id: int
+    round_size: int
+    week_number: int
+    home_club_id: int
+    away_club_id: int
+    home_goals: int | None = None
+    away_goals: int | None = None
+    winner_club_id: int | None = None
+    is_played: bool = False
+    decided_on_penalties: bool = False

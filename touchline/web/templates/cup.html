@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Cup — Touchline RPG{% endblock %}
+{% block content %}
+<hgroup>
+  <h2>{{ cup.name if cup else 'Cup' }}</h2>
+  {% if cup and cup.is_complete and champion %}
+    <p>🏆 Winners: <strong>{{ champion.name }}</strong></p>
+  {% elif cup %}
+    <p>{{ state.season.year_label }} · in progress</p>
+  {% endif %}
+</hgroup>
+
+{% if cup %}
+  {% for rnd in rounds %}
+    <h3>{{ rnd.label }}</h3>
+    <div class="tl-table-wrap">
+      <table class="tl-compact striped">
+        <tbody>
+          {% for t in rnd.ties %}
+            <tr class="{{ 'tl-you' if state.user_club_id in (t.home_club_id, t.away_club_id) else '' }}">
+              <td style="text-align:right">
+                {{ state.clubs[t.home_club_id].name }}
+                {% if t.is_played and t.winner_club_id == t.home_club_id %}✓{% endif %}
+              </td>
+              <td style="text-align:center">
+                {% if t.is_played %}
+                  <strong>{{ t.home_goals }}–{{ t.away_goals }}</strong>{% if t.decided_on_penalties %} <small>(pens)</small>{% endif %}
+                {% else %}v{% endif %}
+              </td>
+              <td>
+                {{ state.clubs[t.away_club_id].name }}
+                {% if t.is_played and t.winner_club_id == t.away_club_id %}✓{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endfor %}
+{% else %}
+  <p>No cup is running this season.</p>
+{% endif %}
+{% endblock %}

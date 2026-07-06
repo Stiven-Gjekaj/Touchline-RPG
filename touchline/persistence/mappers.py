@@ -12,6 +12,8 @@ from touchline.engine.models import (
     Club,
     Contract,
     Country,
+    Cup,
+    CupTie,
     EventType,
     Honour,
     League,
@@ -208,3 +210,32 @@ def honour_to_row(honour: Honour) -> orm.HonourRow:
 
 def honour_from_row(row: orm.HonourRow) -> Honour:
     return Honour(season_number=row.season_number, title=row.title)
+
+
+def cup_to_row(cup: Cup) -> orm.CupRow:
+    return orm.CupRow(id=1, name=cup.name, round_size=cup.round_size,
+                      champion_club_id=cup.champion_club_id,
+                      is_complete=cup.is_complete)
+
+
+def cup_from_row(row: orm.CupRow) -> Cup:
+    return Cup(name=row.name, round_size=row.round_size,
+               champion_club_id=row.champion_club_id, is_complete=row.is_complete)
+
+
+def cup_tie_to_row(tie: CupTie) -> orm.CupTieRow:
+    return orm.CupTieRow(
+        id=tie.id, round_size=tie.round_size, week_number=tie.week_number,
+        home_club_id=tie.home_club_id, away_club_id=tie.away_club_id,
+        home_goals=tie.home_goals, away_goals=tie.away_goals,
+        winner_club_id=tie.winner_club_id, is_played=tie.is_played,
+        decided_on_penalties=tie.decided_on_penalties)
+
+
+def cup_tie_from_row(row: orm.CupTieRow) -> CupTie:
+    return CupTie(
+        id=row.id, round_size=row.round_size, week_number=row.week_number,
+        home_club_id=row.home_club_id, away_club_id=row.away_club_id,
+        home_goals=row.home_goals, away_goals=row.away_goals,
+        winner_club_id=row.winner_club_id, is_played=row.is_played,
+        decided_on_penalties=row.decided_on_penalties)

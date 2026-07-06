@@ -5,6 +5,7 @@ from __future__ import annotations
 from flask import Blueprint, render_template, request
 
 from touchline.engine import constants as C
+from touchline.engine import cup as cup_engine
 from touchline.engine.career import compute_standings
 from touchline.web.helpers import active_save, require_career
 
@@ -41,3 +42,18 @@ def fixtures():
     ]
     matches.sort(key=lambda m: m.week_number)
     return render_template("fixtures.html", state=state, club=club, matches=matches)
+
+
+@bp.route("/cup")
+@require_career
+def cup():
+    state = active_save().state
+    rounds = []
+    for size in sorted({t.round_size for t in state.cup_ties}, reverse=True):
+        ties = [t for t in state.cup_ties if t.round_size == size]
+        rounds.append({"label": cup_engine.round_name(size), "ties": ties})
+    champion = None
+    if state.cup and state.cup.champion_club_id:
+        champion = state.clubs.get(state.cup.champion_club_id)
+    return render_template("cup.html", state=state, cup=state.cup,
+                           rounds=rounds, champion=champion)

@@ -86,6 +86,19 @@ def test_loaded_state_is_playable(tmp_path):
     assert loaded.season.current_week != week_before or loaded.season.number > state.season.number
 
 
+def test_round_trip_preserves_cup(tmp_path):
+    rng = random.Random(4)
+    state = new_career("Cup", "Leo", "Silva", Position.FW, rng)
+    for _ in range(12):  # play a couple of cup rounds
+        advance_week(state, rng)
+    assert state.cup is not None
+    assert any(t.is_played for t in state.cup_ties)
+
+    loaded = _save_then_load(state, tmp_path)
+    assert loaded.cup == state.cup
+    assert {t.id: t for t in loaded.cup_ties} == {t.id: t for t in state.cup_ties}
+
+
 def test_round_trip_preserves_career_history(tmp_path):
     rng = random.Random(9)
     state = new_career("History", "Leo", "Silva", Position.FW, rng)

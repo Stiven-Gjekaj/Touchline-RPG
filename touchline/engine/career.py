@@ -11,7 +11,7 @@ import random
 from dataclasses import dataclass, field
 
 from touchline.engine import constants as C
-from touchline.engine import progression, transfers
+from touchline.engine import cup, progression, transfers
 from touchline.engine.generation import create_user_player, generate_world
 from touchline.engine.models import (
     Club,
@@ -112,6 +112,7 @@ class WeekResult:
     week: int
     phase: Phase
     user_match_result: MatchResult | None = None
+    user_cup_result: MatchResult | None = None
     messages: list[str] = field(default_factory=list)
     season_ended: bool = False
     new_season_started: bool = False
@@ -128,6 +129,7 @@ def new_career(
     state = generate_world(save_name, rng)
     create_user_player(state, first_name, last_name, position, rng)
     generate_season_fixtures(state, rng)
+    cup.start_cup(state, rng)
     return state
 
 
@@ -157,6 +159,9 @@ def advance_week(
 
     if current_phase == Phase.MATCH:
         result.user_match_result = _play_week_matches(state, week, rng)
+        if cup.is_cup_week(week):
+            result.user_cup_result, cup_messages = cup.play_cup_week(state, week, rng)
+            result.messages.extend(cup_messages)
     elif is_training_week(week):
         progression.apply_training_week(state, rng, user_focus)
 
@@ -302,6 +307,7 @@ def _start_new_season(state: GameState, rng: random.Random, result: WeekResult) 
     state.player_stats.clear()
     state.season = new_season
     generate_season_fixtures(state, rng)
+    cup.start_cup(state, rng)
     result.new_season_started = True
     result.messages.append(f"A new season begins: {new_season.year_label}.")
 

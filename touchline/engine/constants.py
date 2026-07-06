@@ -84,6 +84,23 @@ MENTALITY_XG: dict[Mentality, tuple[float, float]] = {
 }
 
 # --------------------------------------------------------------------------- #
+# Cup competition
+# --------------------------------------------------------------------------- #
+
+CUP_NAME = "Touchline Cup"
+#: A power-of-two knockout field, seeded by reputation (the user always plays).
+NUM_CUP_TEAMS = 32
+#: League weeks the cup rounds land on — one per round (32→16→8→4→2→1).
+CUP_WEEKS = [6, 10, 14, 18, 22]
+CUP_ROUND_NAMES: dict[int, str] = {
+    32: "Round of 32",
+    16: "Round of 16",
+    8: "Quarter-final",
+    4: "Semi-final",
+    2: "Final",
+}
+
+# --------------------------------------------------------------------------- #
 # World / league structure
 # --------------------------------------------------------------------------- #
 

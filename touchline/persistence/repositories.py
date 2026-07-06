@@ -38,6 +38,7 @@ _ROW_TYPES = [
     orm.MetaRow, orm.CountryRow, orm.SeasonRow, orm.LeagueRow, orm.ClubRow,
     orm.PlayerRow, orm.MatchRow, orm.MatchEventRow, orm.MatchPlayerStatRow,
     orm.ContractRow, orm.TransferOfferRow, orm.SeasonRecordRow, orm.HonourRow,
+    orm.CupRow, orm.CupTieRow,
 ]
 
 
@@ -65,6 +66,9 @@ def save_state(session: Session, state: GameState) -> None:
     session.add_all(m.offer_to_row(x) for x in state.transfer_offers.values())
     session.add_all(m.season_record_to_row(x) for x in state.season_records)
     session.add_all(m.honour_to_row(x) for x in state.honours)
+    if state.cup is not None:
+        session.add(m.cup_to_row(state.cup))
+        session.add_all(m.cup_tie_to_row(x) for x in state.cup_ties)
     session.commit()
 
 
@@ -119,4 +123,11 @@ def load_state(session: Session, expected_version: int = SCHEMA_VERSION) -> Game
         m.honour_from_row(r)
         for r in session.query(orm.HonourRow).order_by(orm.HonourRow.id).all()
     ]
+    cup_row = session.get(orm.CupRow, 1)
+    if cup_row is not None:
+        state.cup = m.cup_from_row(cup_row)
+        state.cup_ties = [
+            m.cup_tie_from_row(r)
+            for r in session.query(orm.CupTieRow).order_by(orm.CupTieRow.id).all()
+        ]
     return state

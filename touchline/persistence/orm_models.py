@@ -167,3 +167,26 @@ class HonourRow(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     season_number = Column(Integer, nullable=False)
     title = Column(String, nullable=False)
+
+
+class CupRow(Base):
+    __tablename__ = "cup"
+    id = Column(Integer, primary_key=True)  # always 1
+    name = Column(String, nullable=False)
+    round_size = Column(Integer, nullable=False)
+    champion_club_id = Column(Integer)
+    is_complete = Column(Boolean, nullable=False)
+
+
+class CupTieRow(Base):
+    __tablename__ = "cup_ties"
+    id = Column(Integer, primary_key=True)
+    round_size = Column(Integer, nullable=False)
+    week_number = Column(Integer, nullable=False)
+    home_club_id = Column(Integer, nullable=False)
+    away_club_id = Column(Integer, nullable=False)
+    home_goals = Column(Integer)
+    away_goals = Column(Integer)
+    winner_club_id = Column(Integer)
+    is_played = Column(Boolean, nullable=False)
+    decided_on_penalties = Column(Boolean, nullable=False)

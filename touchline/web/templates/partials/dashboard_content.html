@@ -26,10 +26,17 @@
   {% endif %}
 
   {% if last_week %}
-    {% set result = last_week.user_match_result %}
-    {% if result and result.recap_lines %}
+    {% if last_week.user_match_result and last_week.user_match_result.recap_lines %}
+      {% set result = last_week.user_match_result %}
       <article>
         <header><strong>Last match</strong></header>
+        {% include "partials/recap.html" %}
+      </article>
+    {% endif %}
+    {% if last_week.user_cup_result and last_week.user_cup_result.recap_lines %}
+      {% set result = last_week.user_cup_result %}
+      <article>
+        <header><strong>Cup tie</strong></header>
         {% include "partials/recap.html" %}
       </article>
     {% endif %}
