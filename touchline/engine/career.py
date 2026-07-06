@@ -183,13 +183,25 @@ def _run_end_of_season(state: GameState, rng: random.Random, result: WeekResult)
 
     _apply_promotion_relegation(state, result)
 
-    # Age every active player by a year. (Retirement + youth intake arrive with
-    # the progression milestone.)
+    # Age every active player by a year, then process retirements, youth
+    # intake, and the user's decline/forced-retirement status.
     for player in state.players.values():
         if not player.is_retired:
             player.age += 1
 
+    result.messages.extend(progression.process_end_of_season(state, rng))
+    result.messages.extend(progression.check_user_status(state))
+
     state.season.is_complete = True
+
+
+def retire_user(state: GameState) -> list[str]:
+    """Voluntarily retire the user's player (triggered from the UI)."""
+    user = state.user_player
+    if user is None or user.is_retired:
+        return []
+    progression.retire_player(state, user)
+    return [f"{user.name} has retired from football. What a career."]
 
 
 def _apply_promotion_relegation(state: GameState, result: WeekResult) -> None:

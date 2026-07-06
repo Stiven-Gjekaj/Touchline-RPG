@@ -186,8 +186,8 @@ def simulate_match(
     _record_goals(away, away_xi, away_goals, rng, tally, add_event)
     injured = _record_discipline_and_injuries(home, home_xi, rng, add_event)
     injured += _record_discipline_and_injuries(away, away_xi, rng, add_event)
-    _apply_participation_effects(home_xi, home_goals, away_goals)
-    _apply_participation_effects(away_xi, away_goals, home_goals)
+    _apply_participation_effects(home_xi, home_goals, away_goals, rng)
+    _apply_participation_effects(away_xi, away_goals, home_goals, rng)
 
     # Stable sort by minute keeps each assist immediately after its goal (they
     # share a minute and the goal is recorded first).
@@ -294,8 +294,12 @@ def _injury_weeks(rng: random.Random) -> int:
     return rng.randint(8, 16)      # severe
 
 
-def _apply_participation_effects(xi: list[Player], goals_for: int, goals_against: int) -> None:
-    """Condition drop and a small form nudge for players who started."""
+def _apply_participation_effects(
+    xi: list[Player], goals_for: int, goals_against: int, rng: random.Random
+) -> None:
+    """Condition drop, form nudge, and match-minutes growth for who started."""
+    from touchline.engine import progression
+
     if goals_for > goals_against:
         form_delta = 1
     elif goals_for < goals_against:
@@ -305,6 +309,7 @@ def _apply_participation_effects(xi: list[Player], goals_for: int, goals_against
     for player in xi:
         player.condition = int(clamp(player.condition - C.CONDITION_MATCH_DROP, 0, 100))
         player.form = int(clamp(player.form + form_delta, -10, 10))
+        progression.apply_match_minutes_growth(player, rng)
 
 
 def _personal_rating(goals, assists, own_goals, opp_goals, rng) -> float:

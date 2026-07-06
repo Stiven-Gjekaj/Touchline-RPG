@@ -156,3 +156,22 @@ NPC_FOCUS_BY_POSITION: dict[Position, TrainingFocus] = {
     Position.MF: TrainingFocus.PLAYMAKING,
     Position.FW: TrainingFocus.ATTACKING,
 }
+
+# Attribute growth tuning.
+TRAINING_GAIN_CHOICES = (1, 1, 2)        # weighted toward +1 per successful roll
+MATCH_MINUTES_GROWTH_SCALE = 0.25         # playing grows slower than dedicated training
+YOUNG_AGE_FACTOR = 1.5                     # age <= 21
+PRIME_AGE_FACTOR = 1.0                     # age 22-25
+FADING_AGE_FACTOR = 0.5                    # age 26-29
+
+#: Attributes decline fastest first (legs before game-reading).
+DECLINE_WEIGHTS: dict[str, float] = {
+    "pace": 1.5, "physical": 1.3, "shooting": 1.0,
+    "defending": 0.8, "passing": 0.7, "goalkeeping": 0.8,
+}
+DECLINE_PER_YEAR = 0.05                    # decline chance grows 5%/yr past 30
+DECLINE_CHANCE_CAP = 0.6
+
+# Youth intake (squad replenishment at season end).
+YOUTH_INTAKE_AGE_MIN = 17
+YOUTH_INTAKE_AGE_MAX = 20
