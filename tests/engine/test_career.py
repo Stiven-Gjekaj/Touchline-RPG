@@ -5,8 +5,13 @@ from __future__ import annotations
 import random
 
 from touchline.engine import constants as C
-from touchline.engine.career import advance_week, compute_standings, new_career
-from touchline.engine.models import Position
+from touchline.engine.career import (
+    advance_week,
+    compute_standings,
+    league_position,
+    new_career,
+)
+from touchline.engine.models import ATTRIBUTE_NAMES, Position
 from touchline.engine.season_calendar import Phase
 
 
@@ -110,3 +115,51 @@ def test_multi_season_soak_runs_without_error() -> None:
         assert len(state.clubs_in_league(league.id)) == C.CLUBS_PER_TIER
     # Total club count is unchanged.
     assert len(state.clubs) == C.NUM_TIERS * C.CLUBS_PER_TIER
+
+
+def test_season_record_and_honours_match_actual_finish() -> None:
+    rng = random.Random(21)
+    state = new_career("Hist", "Leo", "Silva", Position.FW, rng)
+
+    while state.season.current_week < C.SEASON_END_WEEK:
+        advance_week(state, rng)
+
+    club = state.user_club
+    league = state.leagues[club.league_id]
+    expected_pos = league_position(state, club.id, club.league_id)
+    user_stats = [s for s in state.player_stats if s.player_id == state.user_player_id]
+    expected_apps = len(user_stats)
+    expected_goals = sum(s.goals for s in user_stats)
+
+    advance_week(state, rng)  # process the season-end week
+
+    assert len(state.season_records) == 1
+    record = state.season_records[0]
+    assert record.league_position == expected_pos
+    assert record.appearances == expected_apps
+    assert record.goals == expected_goals
+    # Honours must be consistent with the actual finishing position.
+    has_title = any("title" in h.title.lower() for h in state.honours)
+    assert has_title == (expected_pos == 1)
+    if league.tier > 1 and expected_pos <= league.promotion_slots:
+        assert any("Promotion" in h.title for h in state.honours)
+
+
+def test_dominant_club_wins_title_and_promotion() -> None:
+    rng = random.Random(3)
+    state = new_career("Champs", "Leo", "Silva", Position.FW, rng)
+    club = state.user_club
+    for player in state.squad(club.id):
+        for attr in ATTRIBUTE_NAMES:
+            setattr(player, attr, 99)
+
+    while state.season.current_week < C.SEASON_END_WEEK:
+        advance_week(state, rng)
+    finish = league_position(state, club.id, club.league_id)
+    started_tier = club.division_tier
+    advance_week(state, rng)
+
+    assert finish == 1  # a 99-rated squad should top a bottom-tier division
+    assert any("title" in h.title.lower() for h in state.honours)
+    if started_tier > 1:
+        assert any("Promotion" in h.title for h in state.honours)

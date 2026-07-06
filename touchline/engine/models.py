@@ -225,3 +225,25 @@ class TransferOffer:
     status: OfferStatus
     week_created: int
     history: list[str] = field(default_factory=list)
+
+
+@dataclass
+class SeasonRecord:
+    """A completed season in the user's career (kept after the yearly clear)."""
+
+    season_number: int
+    club_name: str
+    division_name: str
+    appearances: int
+    goals: int
+    assists: int
+    avg_rating: float
+    league_position: int | None
+
+
+@dataclass
+class Honour:
+    """A trophy or achievement the user earned in a given season."""
+
+    season_number: int
+    title: str

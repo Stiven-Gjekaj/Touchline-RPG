@@ -141,7 +141,8 @@ def test_core_pages_render_after_career_creation(client):
     assert dashboard.status_code == 200
     assert b"Leo Silva" in dashboard.data
 
-    for path in ("/squad", "/standings", "/fixtures", "/player", "/match/last"):
+    for path in ("/squad", "/standings", "/fixtures", "/player", "/match/last",
+                 "/history"):
         page = client.get(path)
         assert page.status_code == 200, path
     # The user is highlighted in their own squad.

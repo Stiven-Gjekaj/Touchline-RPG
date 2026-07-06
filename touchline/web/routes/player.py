@@ -41,6 +41,20 @@ def profile():
     )
 
 
+@bp.route("/history")
+@require_career
+def history():
+    state = active_save().state
+    return render_template(
+        "history.html",
+        state=state,
+        user=state.user_player,
+        records=list(reversed(state.season_records)),
+        honours=list(reversed(state.honours)),
+        totals=state.career_totals(),
+    )
+
+
 @bp.route("/player/retire", methods=["POST"])
 @require_career
 def retire():

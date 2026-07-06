@@ -10,10 +10,24 @@
   <header><strong>{{ user.name }}</strong></header>
   <p>{{ user.position.value }} · Hung up the boots at age {{ user.age }}</p>
   <p>Last club: {{ club.name if club else '—' }}</p>
-  <p>Seasons played: {{ state.season.number }}</p>
   <p>Final rating: <span class="tl-ovr">{{ user.overall() }}</span>
      &nbsp;(potential was {{ user.potential }})</p>
 </article>
+
+<div class="tl-status">
+  <div class="tl-stat"><div class="tl-stat-label">Seasons</div><div class="tl-stat-value">{{ totals.seasons }}</div></div>
+  <div class="tl-stat"><div class="tl-stat-label">Appearances</div><div class="tl-stat-value">{{ totals.appearances }}</div></div>
+  <div class="tl-stat"><div class="tl-stat-label">Goals</div><div class="tl-stat-value">{{ totals.goals }}</div></div>
+  <div class="tl-stat"><div class="tl-stat-label">Assists</div><div class="tl-stat-value">{{ totals.assists }}</div></div>
+  <div class="tl-stat"><div class="tl-stat-label">Honours</div><div class="tl-stat-value">{{ totals.honours }}</div></div>
+</div>
+
+{% if honours %}
+  <article>
+    <header><strong>Honours</strong></header>
+    <ul>{% for h in honours %}<li>🏆 {{ h.title }} <small>(Season {{ h.season_number }})</small></li>{% endfor %}</ul>
+  </article>
+{% endif %}
 
 <p>Thanks for playing. Start a
    <a href="{{ url_for('saves.new_career_form') }}">new career</a>

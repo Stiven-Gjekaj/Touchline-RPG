@@ -80,6 +80,18 @@ def test_loaded_state_is_playable(tmp_path):
     assert loaded.season.current_week != week_before or loaded.season.number > state.season.number
 
 
+def test_round_trip_preserves_career_history(tmp_path):
+    rng = random.Random(9)
+    state = new_career("History", "Leo", "Silva", Position.FW, rng)
+    for _ in range(28):  # cross a season boundary so a record is written
+        advance_week(state, rng)
+    assert state.season_records  # sanity: at least one season recorded
+
+    loaded = _save_then_load(state, tmp_path)
+    assert loaded.season_records == state.season_records
+    assert loaded.honours == state.honours
+
+
 def test_incompatible_schema_version_raises(tmp_path):
     state = _seeded_state(5, weeks=1)
     engine = make_engine(tmp_path / "save.sqlite")

@@ -22,7 +22,7 @@ class IncompatibleSaveError(Exception):
 _ROW_TYPES = [
     orm.MetaRow, orm.CountryRow, orm.SeasonRow, orm.LeagueRow, orm.ClubRow,
     orm.PlayerRow, orm.MatchRow, orm.MatchEventRow, orm.MatchPlayerStatRow,
-    orm.ContractRow, orm.TransferOfferRow,
+    orm.ContractRow, orm.TransferOfferRow, orm.SeasonRecordRow, orm.HonourRow,
 ]
 
 
@@ -47,6 +47,8 @@ def save_state(session: Session, state: GameState) -> None:
     session.add_all(m.stat_to_row(x) for x in state.player_stats)
     session.add_all(m.contract_to_row(x) for x in state.contracts.values())
     session.add_all(m.offer_to_row(x) for x in state.transfer_offers.values())
+    session.add_all(m.season_record_to_row(x) for x in state.season_records)
+    session.add_all(m.honour_to_row(x) for x in state.honours)
     session.commit()
 
 
@@ -90,4 +92,12 @@ def load_state(session: Session, expected_version: int = SCHEMA_VERSION) -> Game
     state.events = [m.event_from_row(r) for r in session.query(orm.MatchEventRow).all()]
     state.player_stats = [m.stat_from_row(r)
                           for r in session.query(orm.MatchPlayerStatRow).all()]
+    state.season_records = [
+        m.season_record_from_row(r)
+        for r in session.query(orm.SeasonRecordRow).order_by(orm.SeasonRecordRow.id).all()
+    ]
+    state.honours = [
+        m.honour_from_row(r)
+        for r in session.query(orm.HonourRow).order_by(orm.HonourRow.id).all()
+    ]
     return state

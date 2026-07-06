@@ -144,3 +144,23 @@ class TransferOfferRow(Base):
     status = Column(String, nullable=False)
     week_created = Column(Integer, nullable=False)
     history = Column(Text, nullable=False, default="[]")
+
+
+class SeasonRecordRow(Base):
+    __tablename__ = "season_records"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    season_number = Column(Integer, nullable=False)
+    club_name = Column(String, nullable=False)
+    division_name = Column(String, nullable=False)
+    appearances = Column(Integer, nullable=False)
+    goals = Column(Integer, nullable=False)
+    assists = Column(Integer, nullable=False)
+    avg_rating = Column(Float, nullable=False)
+    league_position = Column(Integer)
+
+
+class HonourRow(Base):
+    __tablename__ = "honours"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    season_number = Column(Integer, nullable=False)
+    title = Column(String, nullable=False)

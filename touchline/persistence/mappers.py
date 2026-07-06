@@ -13,6 +13,7 @@ from touchline.engine.models import (
     Contract,
     Country,
     EventType,
+    Honour,
     League,
     Match,
     MatchEvent,
@@ -21,6 +22,7 @@ from touchline.engine.models import (
     Player,
     Position,
     Season,
+    SeasonRecord,
     TransferOffer,
 )
 from touchline.persistence import orm_models as orm
@@ -179,3 +181,27 @@ def offer_from_row(row: orm.TransferOfferRow) -> TransferOffer:
                          status=OfferStatus(row.status),
                          week_created=row.week_created,
                          history=json.loads(row.history or "[]"))
+
+
+def season_record_to_row(record: SeasonRecord) -> orm.SeasonRecordRow:
+    return orm.SeasonRecordRow(
+        season_number=record.season_number, club_name=record.club_name,
+        division_name=record.division_name, appearances=record.appearances,
+        goals=record.goals, assists=record.assists, avg_rating=record.avg_rating,
+        league_position=record.league_position)
+
+
+def season_record_from_row(row: orm.SeasonRecordRow) -> SeasonRecord:
+    return SeasonRecord(
+        season_number=row.season_number, club_name=row.club_name,
+        division_name=row.division_name, appearances=row.appearances,
+        goals=row.goals, assists=row.assists, avg_rating=row.avg_rating,
+        league_position=row.league_position)
+
+
+def honour_to_row(honour: Honour) -> orm.HonourRow:
+    return orm.HonourRow(season_number=honour.season_number, title=honour.title)
+
+
+def honour_from_row(row: orm.HonourRow) -> Honour:
+    return Honour(season_number=row.season_number, title=row.title)
