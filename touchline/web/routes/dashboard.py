@@ -46,13 +46,22 @@ def index():
 @bp.route("/dashboard")
 @require_career
 def home():
-    return render_template("dashboard.html", **_dashboard_context(active_save()))
+    save = active_save()
+    user = save.state.user_player
+    if user is not None and user.is_retired:
+        return render_template(
+            "career_over.html", state=save.state, user=user, club=save.state.user_club
+        )
+    return render_template("dashboard.html", **_dashboard_context(save))
 
 
 @bp.route("/advance", methods=["POST"])
 @require_career
 def advance():
     save = active_save()
+    user = save.state.user_player
+    if user is not None and user.is_retired:
+        return redirect(url_for("dashboard.home"))  # career is over
     focus_name = request.form.get("focus", TrainingFocus.BALANCED.value)
     try:
         focus = TrainingFocus(focus_name)

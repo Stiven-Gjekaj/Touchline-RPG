@@ -86,6 +86,19 @@ def test_transfer_inbox_renders(client):
     assert client.get("/transfers").status_code == 200
 
 
+def test_retired_player_sees_career_over_screen(client):
+    _start_career(client)
+    state = client.application.active_save.state
+    state.user_player.is_retired = True
+
+    resp = client.get("/dashboard")
+    assert resp.status_code == 200
+    assert b"Career complete" in resp.data
+    # Advancing is a no-op once retired.
+    advanced = client.post("/advance", data={"focus": "BALANCED"})
+    assert advanced.status_code == 302
+
+
 def test_transfer_accept_moves_player(client):
     import random
 

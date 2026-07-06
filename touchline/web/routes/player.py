@@ -48,4 +48,4 @@ def retire():
     for message in retire_user(save.state):
         flash(message, "info")
     save.persist()
-    return redirect(url_for("player.profile"))
+    return redirect(url_for("dashboard.home"))

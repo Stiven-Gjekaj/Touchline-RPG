@@ -4,6 +4,10 @@
   --pico-primary: #2e9e5b;
   --pico-primary-hover: #38b869;
   --pico-primary-focus: rgba(46, 158, 91, 0.25);
+  --pico-primary-background: #2e9e5b;
+  --pico-primary-hover-background: #38b869;
+  --pico-primary-border: #2e9e5b;
+  --pico-primary-hover-border: #38b869;
   --tl-pitch: #1f7a44;
 }
 
