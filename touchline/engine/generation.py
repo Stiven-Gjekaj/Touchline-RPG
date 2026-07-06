@@ -216,6 +216,7 @@ def _generate_club(
         division_tier=league.tier,
         reputation=reputation,
         wage_budget=reputation * 1000,
+        balance=reputation * C.CLUB_BALANCE_PER_REP,
     )
     state.clubs[club.id] = club
     _generate_squad(state, club, tier_mean + club_offset, rng)

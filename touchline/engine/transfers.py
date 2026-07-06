@@ -170,6 +170,8 @@ def roll_transfer_interest(state: GameState, rng: random.Random) -> list[str]:
         if rng.random() >= interest_probability(state, suitor, player):
             continue
         offer = _make_offer(state, suitor, player, rng)
+        if suitor.balance < offer.offer_fee:
+            continue  # the suitor can't afford the fee
         state.transfer_offers[offer.id] = offer
         if _current_club_accepts(state, offer, rng):
             offer.status = OfferStatus.PENDING_USER_DECISION
@@ -207,6 +209,12 @@ def respond_to_offer(
 def _complete_transfer(state: GameState, offer: TransferOffer) -> list[str]:
     player = state.players[offer.player_id]
     to_club = state.clubs[offer.to_club_id]
+
+    # Money changes hands: the buyer pays the fee, the selling club receives it.
+    to_club.balance -= offer.offer_fee
+    from_club = state.clubs.get(offer.from_club_id)
+    if from_club is not None and from_club.id != to_club.id:
+        from_club.balance += offer.offer_fee
 
     if player.contract_id is not None:
         state.contracts.pop(player.contract_id, None)

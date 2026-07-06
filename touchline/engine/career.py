@@ -11,7 +11,7 @@ import random
 from dataclasses import dataclass, field
 
 from touchline.engine import constants as C
-from touchline.engine import cup, progression, transfers
+from touchline.engine import cup, finance, progression, transfers
 from touchline.engine.generation import create_user_player, generate_world
 from touchline.engine.models import (
     Club,
@@ -201,8 +201,22 @@ def _play_week_matches(
 # --------------------------------------------------------------------------- #
 
 
+def _final_positions(state: GameState) -> dict[int, int]:
+    """Map each club id to its 1-based finishing position in its division."""
+    positions: dict[int, int] = {}
+    for tier in range(1, C.NUM_TIERS + 1):
+        league = state.league_by_tier(tier)
+        for index, row in enumerate(compute_standings(state, league.id), start=1):
+            positions[row.club.id] = index
+    return positions
+
+
 def _run_end_of_season(state: GameState, rng: random.Random, result: WeekResult) -> None:
     _record_user_season(state, result)
+    # Settle finances on the season's final table, before promotion/relegation
+    # moves clubs between divisions.
+    positions = _final_positions(state)
+    finance.settle_season(state, lambda club: positions.get(club.id, C.CLUBS_PER_TIER))
     _apply_promotion_relegation(state, result)
 
     # Age every active player by a year, then process retirements, youth

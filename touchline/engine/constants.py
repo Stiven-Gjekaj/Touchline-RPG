@@ -10,8 +10,8 @@ from touchline.engine.models import Mentality, Position, SubPosition, TrainingFo
 
 #: Bumped whenever the persisted schema changes incompatibly. Saves whose stored
 #: value differs are treated as incompatible rather than migrated.
-#: v2 added sub-positions and tactics columns.
-SCHEMA_VERSION = 2
+#: v2 added sub-positions and tactics; v3 added club finances.
+SCHEMA_VERSION = 3
 
 # --------------------------------------------------------------------------- #
 # Ratings
@@ -99,6 +99,19 @@ CUP_ROUND_NAMES: dict[int, str] = {
     4: "Semi-final",
     2: "Final",
 }
+
+# --------------------------------------------------------------------------- #
+# Finances
+# --------------------------------------------------------------------------- #
+
+#: Starting bank balance scales with club reputation.
+CLUB_BALANCE_PER_REP = 5000
+#: Clubs run a small operating surplus each season (income vs wages), so they
+#: stay solvent by construction — no bankruptcy spiral to manage in v1.1.
+OPERATING_SURPLUS = 0.05
+#: Prize money per finishing place, by tier (top divisions pay more). A club
+#: earns this times (clubs_per_tier - position + 1).
+PRIZE_MONEY_PER_PLACE: dict[int, int] = {1: 40000, 2: 20000, 3: 10000}
 
 # --------------------------------------------------------------------------- #
 # World / league structure

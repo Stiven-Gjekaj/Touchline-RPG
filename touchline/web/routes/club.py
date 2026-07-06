@@ -5,6 +5,7 @@ from __future__ import annotations
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from touchline.engine import constants as C
+from touchline.engine import finance
 from touchline.engine.career import set_tactic
 from touchline.engine.models import Mentality, Position
 from touchline.web.helpers import active_save, require_career
@@ -29,6 +30,20 @@ def squad():
         club=club,
         players=players,
         user_id=state.user_player_id,
+    )
+
+
+@bp.route("/finances")
+@require_career
+def finances():
+    state = active_save().state
+    club = state.user_club
+    return render_template(
+        "finances.html",
+        state=state,
+        club=club,
+        wage_bill=finance.weekly_wage_bill(state, club),
+        squad_value=finance.squad_value(state, club),
     )
 
 

@@ -167,6 +167,7 @@ class Club:
     division_tier: int
     reputation: int
     wage_budget: int
+    balance: int = 0
 
 
 @dataclass

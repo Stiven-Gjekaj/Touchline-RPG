@@ -62,6 +62,7 @@ class ClubRow(Base):
     division_tier = Column(Integer, nullable=False)
     reputation = Column(Integer, nullable=False)
     wage_budget = Column(Integer, nullable=False)
+    balance = Column(Integer, nullable=False, default=0)
 
 
 class PlayerRow(Base):

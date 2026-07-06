@@ -66,13 +66,15 @@ def league_from_row(row: orm.LeagueRow) -> League:
 def club_to_row(club: Club) -> orm.ClubRow:
     return orm.ClubRow(id=club.id, name=club.name, short_name=club.short_name,
                        league_id=club.league_id, division_tier=club.division_tier,
-                       reputation=club.reputation, wage_budget=club.wage_budget)
+                       reputation=club.reputation, wage_budget=club.wage_budget,
+                       balance=club.balance)
 
 
 def club_from_row(row: orm.ClubRow) -> Club:
     return Club(id=row.id, name=row.name, short_name=row.short_name,
                 league_id=row.league_id, division_tier=row.division_tier,
-                reputation=row.reputation, wage_budget=row.wage_budget)
+                reputation=row.reputation, wage_budget=row.wage_budget,
+                balance=row.balance)
 
 
 def player_to_row(player: Player) -> orm.PlayerRow:
