@@ -25,6 +25,14 @@ minute-by-minute commentary.
   relegation, standings, and fixtures.
 - **Transfers** — perform well in a window and rival clubs come calling;
   accept, reject, or counter their wage offer.
+- **Tactics** — choose your club's formation and mentality; players carry
+  detailed roles (CB/FB/DM/CM/AM/W/ST).
+- **Cup** — a 32-team knockout runs alongside the league, with a bracket to
+  climb and silverware to win.
+- **Finances** — clubs have balances and wage bills; transfer fees move real
+  money and gate who can afford to sign you.
+- **Career history & honours** — lifetime stats, a season-by-season record, and
+  the trophies you lift.
 - **Save slots** — multiple independent careers, each an SQLite file; quit and
   resume exactly where you left off.
 
