@@ -21,7 +21,7 @@ from touchline.engine.state import GameState
 
 def _make_state() -> GameState:
     country = Country(id=1, name="Testland")
-    season = Season(id=2, year_label="S1", current_week=C.REGULAR_SEASON_START)
+    season = Season(id=2, number=1, current_week=C.REGULAR_SEASON_START)
     return GameState(save_name="t", created_at="", last_played_at="",
                      schema_version=1, country=country, season=season, _next_id=3)
 

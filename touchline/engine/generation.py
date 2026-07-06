@@ -238,7 +238,7 @@ def generate_world(save_name: str, rng: random.Random) -> GameState:
     """Build a complete fresh world and return its :class:`GameState`."""
     now = _dt.datetime.now().isoformat(timespec="seconds")
     country = Country(id=1, name="Albion")
-    season = Season(id=2, year_label="Season 1", current_week=1)
+    season = Season(id=2, number=1, current_week=1)
     state = GameState(
         save_name=save_name,
         created_at=now,

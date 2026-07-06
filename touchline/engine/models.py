@@ -148,9 +148,13 @@ class Season:
     separate fixture entity."""
 
     id: int
-    year_label: str
+    number: int = 1
     current_week: int = 1
     is_complete: bool = False
+
+    @property
+    def year_label(self) -> str:
+        return f"Season {self.number}"
 
 
 @dataclass
