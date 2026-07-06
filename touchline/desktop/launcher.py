@@ -5,8 +5,8 @@ pywebview window pointed at it. If pywebview (or its OS web engine) is
 unavailable, falls back to opening the user's default browser so the game is
 never fully blocked by a missing system component.
 
-Heavy imports (Flask, pywebview) are performed lazily inside ``main`` so the
-module can be imported cheaply — e.g. by ``run.py`` — without them installed.
+Heavy imports (Flask, pywebview) are performed lazily so the module can be
+imported cheaply — e.g. by ``run.py`` — without them installed.
 """
 
 from __future__ import annotations
@@ -23,16 +23,17 @@ def _free_port() -> int:
         return sock.getsockname()[1]
 
 
-def main() -> None:
-    """Launch the desktop app (native window, with browser fallback)."""
+def start_server(port: int | None = None) -> tuple[int, threading.Thread]:
+    """Start the Flask app on a background daemon thread; return (port, thread).
+
+    Bind to 127.0.0.1 only — this is a local single-user app, never a network
+    service. ``use_reloader=False`` is required because Werkzeug's reloader
+    re-execs the process, which breaks when Flask runs on a background thread.
+    """
     from touchline.web import create_app
 
     app = create_app()
-    port = _free_port()
-
-    # Bind to 127.0.0.1 only: this is a local single-user app, never a network
-    # service. use_reloader=False is required because Werkzeug's reloader
-    # re-execs the process, which breaks when Flask runs on a background thread.
+    port = port or _free_port()
     thread = threading.Thread(
         target=lambda: app.run(
             host="127.0.0.1", port=port, debug=False, use_reloader=False, threaded=True
@@ -40,8 +41,15 @@ def main() -> None:
         daemon=True,
     )
     thread.start()
+    return port, thread
 
-    url = f"http://127.0.0.1:{port}"
+
+def open_window(url: str, thread: threading.Thread) -> None:
+    """Open a native pywebview window, falling back to the default browser.
+
+    The fallback keeps the server thread alive (``join``) so the app stays
+    usable even when the platform's web engine (WebKitGTK / WebView2) is absent.
+    """
     try:
         import webview  # type: ignore[import-not-found]
 
@@ -52,3 +60,9 @@ def main() -> None:
     except Exception:  # pragma: no cover - depends on OS web engine availability
         webbrowser.open(url)
         thread.join()
+
+
+def main() -> None:
+    """Launch the desktop app (native window, with browser fallback)."""
+    port, thread = start_server()
+    open_window(f"http://127.0.0.1:{port}", thread)
